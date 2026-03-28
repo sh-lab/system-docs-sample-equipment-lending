@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="#{login.title}">login.title</title>
+</head>
+<body>
+<div th:replace="~{fragments/fragment-hfp-el-common :: hfp_el_header}"></div>
+
+<main>
+    <h2 th:text="#{login.title}">login.title</h2>
+    <p th:text="#{login.description}">login.description</p>
+
+    <div th:if="${errorMessage}" th:text="${errorMessage}">errorMessage</div>
+
+    <form th:action="@{/login}" method="post">
+        <input th:if="${_csrf != null}"
+               th:name="${_csrf.parameterName}"
+               th:value="${_csrf.token}"
+               type="hidden">
+        <div>
+            <label for="userId" th:text="#{login.user-id}">login.user-id</label>
+            <input id="userId" name="userId" type="text" th:value="${userId}">
+        </div>
+        <div>
+            <label for="password" th:text="#{login.password}">login.password</label>
+            <input id="password" name="password" type="password">
+        </div>
+        <button type="submit" th:text="#{login.submit}">login.submit</button>
+    </form>
+
+    <p th:text="#{login.password-note}">login.password-note</p>
+
+    <section>
+        <h3 th:text="#{login.test-users-title}">login.test-users-title</h3>
+        <table>
+            <thead>
+            <tr>
+                <th th:text="#{login.test-users.user-id}">login.test-users.user-id</th>
+                <th th:text="#{login.test-users.user-name}">login.test-users.user-name</th>
+                <th th:text="#{login.test-users.role}">login.test-users.role</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>USER01</td>
+                <td>利用者01</td>
+                <td th:text="#{login.test-users.role.user}">login.test-users.role.user</td>
+            </tr>
+            <tr>
+                <td>USER02</td>
+                <td>利用者02</td>
+                <td th:text="#{login.test-users.role.user}">login.test-users.role.user</td>
+            </tr>
+            <tr>
+                <td>USER03</td>
+                <td>利用者03</td>
+                <td th:text="#{login.test-users.role.user}">login.test-users.role.user</td>
+            </tr>
+            <tr>
+                <td>USER04</td>
+                <td>利用者04</td>
+                <td th:text="#{login.test-users.role.user}">login.test-users.role.user</td>
+            </tr>
+            <tr>
+                <td>ADMIN1</td>
+                <td>管理者01</td>
+                <td th:text="#{login.test-users.role.admin}">login.test-users.role.admin</td>
+            </tr>
+            <tr>
+                <td>ADMIN2</td>
+                <td>管理者02</td>
+                <td th:text="#{login.test-users.role.admin}">login.test-users.role.admin</td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+</main>
+
+<div th:replace="~{fragments/fragment-hfp-el-common :: hfp_el_footer}"></div>
+</body>
+</html>

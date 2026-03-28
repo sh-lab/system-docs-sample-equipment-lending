@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="#{screen.elv500.title}">screen.elv500.title</title>
+    <link rel="stylesheet" th:href="@{/css/business-common.css}">
+</head>
+<body class="business-screen">
+<div th:replace="~{fragments/fragment-hfp-el-common :: hfp_el_header_with_page_title(#{screen.elv500.title})}"></div>
+
+<main class="business-main">
+    <p class="business-message business-message--error"
+       th:if="${errorMessage != null}"
+       th:text="${errorMessage}">errorMessage</p>
+    <p class="business-message business-message--info"
+       th:if="${infoMessage != null}"
+       th:text="${infoMessage}">infoMessage</p>
+
+    <h1 class="business-page-title" th:text="#{screen.elv500.title}">screen.elv500.title</h1>
+    <p class="business-mode-label" th:if="${isApprovalReviewMode}" th:text="#{screen.elv500.mode.approval-review}">screen.elv500.mode.approval-review</p>
+    <p class="business-mode-label" th:if="${isReturnConfirmMode}" th:text="#{screen.elv500.mode.return-confirm}">screen.elv500.mode.return-confirm</p>
+
+    <section class="business-section" th:if="${hasSelection}">
+        <h2 class="business-section__title" th:text="#{screen.elv500.selected-summary}">screen.elv500.selected-summary</h2>
+        <dl class="business-summary-grid">
+            <div>
+                <dt th:text="#{screen.elv500.request-id}">screen.elv500.request-id</dt>
+                <dd th:text="${viewData.selectedRequest().lendingRequestId()}">2001</dd>
+            </div>
+            <div>
+                <dt th:text="#{screen.elv500.applicant-user-id}">screen.elv500.applicant-user-id</dt>
+                <dd th:text="${viewData.selectedRequest().applicantUserId()}">USER02</dd>
+            </div>
+            <div>
+                <dt th:text="#{label.status}">label.status</dt>
+                <dd th:text="${viewData.selectedRequest().statusLabel()}">承認待ち</dd>
+            </div>
+            <div>
+                <dt th:text="#{screen.elv500.requested-at}">screen.elv500.requested-at</dt>
+                <dd th:text="${viewData.selectedRequest().requestedAt()}">2026-01-10 09:00</dd>
+            </div>
+            <div th:if="${viewData.selectedRequest().reviewedAt() != null}">
+                <dt th:text="#{screen.elv500.reviewed-at}">screen.elv500.reviewed-at</dt>
+                <dd th:text="${viewData.selectedRequest().reviewedAt()}">2026-01-10 10:00</dd>
+            </div>
+            <div th:if="${viewData.selectedRequest().returnRequestedAt() != null}">
+                <dt th:text="#{screen.elv500.return-requested-at}">screen.elv500.return-requested-at</dt>
+                <dd th:text="${viewData.selectedRequest().returnRequestedAt()}">2026-01-14 17:00</dd>
+            </div>
+        </dl>
+    </section>
+
+    <section class="business-section" th:if="${hasSelection}">
+        <h2 class="business-section__title" th:text="#{screen.elv500.selected-equipment}">screen.elv500.selected-equipment</h2>
+        <table class="business-table">
+            <thead>
+            <tr>
+                <th th:text="#{label.equipment-code}">label.equipment-code</th>
+                <th th:text="#{screen.elv300.equipment-name}">screen.elv300.equipment-name</th>
+                <th th:text="#{screen.elv300.equipment-type}">screen.elv300.equipment-type</th>
+                <th th:text="#{label.storage-location}">label.storage-location</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="equipmentItem : ${viewData.selectedRequest().equipmentItems()}">
+                <td th:text="${equipmentItem.equipmentCode()}">EQ-0001</td>
+                <td th:text="${equipmentItem.equipmentName()}">長机 2台</td>
+                <td th:text="${equipmentItem.equipmentTypeLabel()}">長机</td>
+                <td th:text="${equipmentItem.storageLocation()}">第1倉庫</td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section class="business-section" th:if="${hasSelection}">
+        <h2 class="business-section__title" th:text="#{screen.elv500.request-comment}">screen.elv500.request-comment</h2>
+        <p class="business-preformatted" th:text="${viewData.selectedRequest().requestComment()}"></p>
+    </section>
+
+    <section class="business-section" th:if="${hasSelection}">
+        <h2 class="business-section__title" th:text="#{screen.elv500.review-comment}">screen.elv500.review-comment</h2>
+        <div th:if="${isApprovalReviewMode}">
+            <form method="post">
+                <input th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" type="hidden">
+                <input name="requestId" th:value="${viewData.selectedRequest().lendingRequestId()}" type="hidden">
+                <input name="version" th:value="${viewData.selectedRequest().version()}" type="hidden">
+                <textarea class="business-textarea" name="reviewComment" rows="5" th:text="${reviewComment}"></textarea>
+                <div class="business-action-row business-action-row--right">
+                    <button class="business-button" th:formaction="@{/hfp-elv500-admin-lending-review/approve}" th:text="#{screen.elv500.approve}" type="submit">screen.elv500.approve</button>
+                    <button class="business-button business-button--secondary" th:formaction="@{/hfp-elv500-admin-lending-review/reject}" th:text="#{screen.elv500.reject}" type="submit">screen.elv500.reject</button>
+                </div>
+            </form>
+        </div>
+        <p class="business-preformatted" th:if="${!isApprovalReviewMode}" th:text="${viewData.selectedRequest().reviewComment()}"></p>
+    </section>
+
+    <section class="business-section" th:if="${hasSelection}">
+        <h2 class="business-section__title" th:text="#{screen.elv500.return-request-comment}">screen.elv500.return-request-comment</h2>
+        <p class="business-preformatted" th:text="${viewData.selectedRequest().returnRequestComment()}"></p>
+    </section>
+
+    <section class="business-section" th:if="${hasSelection}">
+        <h2 class="business-section__title" th:text="#{screen.elv500.return-confirm-comment}">screen.elv500.return-confirm-comment</h2>
+        <form method="post" th:if="${isReturnConfirmMode}" th:action="@{/hfp-elv500-admin-lending-review/return-confirm}">
+            <input th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" type="hidden">
+            <input name="requestId" th:value="${viewData.selectedRequest().lendingRequestId()}" type="hidden">
+            <input name="version" th:value="${viewData.selectedRequest().version()}" type="hidden">
+            <textarea class="business-textarea" name="returnConfirmComment" rows="5" th:text="${returnConfirmComment}"></textarea>
+            <div class="business-action-row business-action-row--right">
+                <button class="business-button" th:text="#{screen.elv500.return-confirm}" type="submit">screen.elv500.return-confirm</button>
+            </div>
+        </form>
+        <p class="business-preformatted" th:if="${!isReturnConfirmMode}" th:text="${viewData.selectedRequest().returnConfirmComment()}"></p>
+    </section>
+
+    <div class="business-action-row">
+        <form method="get" th:action="@{/hfp-elv200-admin-mypage}">
+            <button class="business-button business-button--secondary" th:text="#{screen.elv500.back-to-mypage}" type="submit">screen.elv500.back-to-mypage</button>
+        </form>
+    </div>
+</main>
+
+<div th:replace="~{fragments/fragment-hfp-el-common :: hfp_el_footer}"></div>
+</body>
+</html>

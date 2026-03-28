@@ -1,0 +1,98 @@
+# セキュリティ設計
+
+## 1. 文書の目的
+本書は、本システムにおける認証・認可の具体設計を定義し、
+画面設計および Controller 実装の共通基準を示すことを目的とする。
+
+---
+
+## 2. 適用範囲
+- ログイン画面および業務画面の認証条件
+- 画面別の認可設計
+- 認証コンテキストの表現
+- Controller における利用者識別方法
+- 未認証および権限不足時の制御方針
+
+---
+
+## 3. 基本設計方針
+- 認証・認可基盤には Spring Security を採用する。
+- 認可判定は Controller 層で完結させ、業務サービス層では行わない。
+- 利用者区分は `USER` / `ADMIN` のロールで表現する。
+- 共通の認証・認可制御は横断設計として集約し、個別画面設計書へ重複定義しない。
+
+---
+
+## 4. 認証設計
+### 4.1 認証対象
+- `login` 画面およびログイン処理は、未認証の利用者が利用できる。
+- `login` を除く業務画面は、認証済み利用者のみ利用できる。
+
+### 4.2 認証コンテキスト
+- 認証済み利用者情報は `UserPrincipal` として表現する。
+- `UserPrincipal` は少なくとも以下を保持する。
+  - `userId`
+  - `roleCode`
+- `roleCode` は `M_USER.ROLE_CODE` の値体系と一致させる。
+
+### 4.3 正とする保持場所
+- ログイン成功後の利用者情報は Spring Security の `Authentication` および `SecurityContext` に保持する。
+- 独自の `HttpSession` 属性は、認証・認可判定の正として扱わない。
+
+### 4.4 本サンプルにおける認証の簡略化
+- 本サンプルでは、Spring Security の認証フレームワークによる認証処理は採用せず、学習簡便のため手動認証を採用する。
+- ただし、認証後の利用者情報の保持、認可制御、CSRF 対策については Spring Security を利用する。
+- 本番環境では、`AuthenticationProvider` 等を用いた標準的な認証方式を採用すべきである。
+
+---
+
+## 5. 認可設計
+### 5.1 画面別認可
+| 画面 | 利用対象 | 認可方法 |
+|------|----------|----------|
+| `login` | 未認証の利用者 | `permitAll` |
+| `HFP-EL-V100_user-mypage` | `USER` 権限を持つ認証済み利用者 | `@PreAuthorize("hasRole('USER')")` |
+| `HFP-EL-V300_equipment-search` | `USER` 権限を持つ認証済み利用者 | `@PreAuthorize("hasRole('USER')")` |
+| `HFP-EL-V400_user-lending-request` | `USER` 権限を持つ認証済み利用者 | `@PreAuthorize("hasRole('USER')")` |
+| `HFP-EL-V200_admin-mypage` | `ADMIN` 権限を持つ認証済み利用者 | `@PreAuthorize("hasRole('ADMIN')")` |
+| `HFP-EL-V500_admin-lending-review` | `ADMIN` 権限を持つ認証済み利用者 | `@PreAuthorize("hasRole('ADMIN')")` |
+
+### 5.2 Controller 責務
+- Controller は画面単位の認可を宣言する。
+- Controller は認証コンテキストから利用者 ID を取得し、業務サービスへ引き渡す。
+- Controller 内でロール判定や利用者識別の重複実装を行わない。
+- 業務サービス層は、Controller から引き渡された利用者 ID を前提に業務処理を行い、認可判定は持ち込まない。
+
+---
+
+## 6. 権限不足時制御
+- 未認証で業務画面へアクセスした場合は、ログイン画面へ誘導する。
+- 認証済みだが別ロールの画面へアクセスした場合は、認可エラー画面に固定せず、利用者区分に応じて許可された画面へ誘導する。
+- 上記制御はセキュリティ設定または専用ハンドラへ集約し、個別 Controller に分散させない。
+
+---
+
+## 7. 個別画面設計との関係
+- `docs/03_designs/ui/screen-list.md` では、画面ごとの利用対象と画面間関係のみを記載する。
+- 個別画面設計書では、当該画面に固有の利用条件や本人確認要件を記載する。
+- `@PreAuthorize`、`UserPrincipal`、権限不足時制御などの共通事項は、本書を正本として参照する。
+
+---
+
+## 8. テスト観点
+- Controller 単体テストでは、画面ごとに正常系、未認証、権限不足を検証する。
+- 認証済み利用者を用いるテストでは、`UserPrincipal` を保持した認証コンテキストを明示的に設定する。
+- 画面固有の業務条件と共通認可条件を混在させず、それぞれ分離して検証する。
+
+---
+
+## 9. 関連資料
+- `docs/01_requirements/functional-requirements.md`
+- `docs/02_architecture/security-authorization-policy.md`
+- `docs/03_designs/ui/screen-list.md`
+- `docs/03_designs/ui/HFP-EL-V100_user-mypage.md`
+- `docs/03_designs/ui/HFP-EL-V200_admin-mypage.md`
+- `docs/03_designs/ui/HFP-EL-V300_equipment-search.md`
+- `docs/03_designs/ui/HFP-EL-V400_user-lending-request.md`
+- `docs/03_designs/ui/HFP-EL-V500_admin-lending-review.md`
+- `docs/99_adr/ADR-003_spring-security-csrf-adoption.md`

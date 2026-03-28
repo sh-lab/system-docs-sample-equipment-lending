@@ -1,0 +1,222 @@
+.business-screen {
+    background: #f8f9fa;
+    color: #1f2933;
+    font-family: "Segoe UI", "Meiryo", sans-serif;
+    margin: 0;
+}
+
+.business-header {
+    background: #003366;
+    color: #ffffff;
+    padding: 1rem 2rem;
+}
+
+.business-header__title {
+    font-size: 1.5rem;
+    margin: 0;
+}
+
+.business-main {
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    margin: 2rem auto;
+    max-width: 960px;
+    padding: 2rem;
+}
+
+.business-page-title {
+    margin-top: 0;
+    margin-bottom: 1rem;
+}
+
+.business-mode-label {
+    color: #486581;
+    font-weight: 600;
+    margin-top: -0.25rem;
+}
+
+.business-message {
+    border-radius: 6px;
+    margin-bottom: 1rem;
+    padding: 0.875rem 1rem;
+}
+
+.business-message--warning {
+    background: #fff7e6;
+    border: 1px solid #f0b429;
+    color: #8d2b0b;
+}
+
+.business-message--info {
+    background: #eef2f6;
+    border: 1px solid #cbd2d9;
+    color: #334e68;
+}
+
+.business-message--error {
+    background: #fdecea;
+    border: 1px solid #e57373;
+    color: #8a1c1c;
+}
+
+.business-section {
+    margin-top: 2rem;
+}
+
+.business-section:first-of-type {
+    margin-top: 1.5rem;
+}
+
+.business-section__title {
+    margin-bottom: 0.75rem;
+}
+
+.business-table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.business-table th,
+.business-table td {
+    border: 1px solid #d9e2ec;
+    padding: 0.75rem;
+    text-align: left;
+    vertical-align: top;
+}
+
+.business-table th {
+    background: #f0f4f8;
+}
+
+.business-button {
+    background: #0b69a3;
+    border: none;
+    border-radius: 4px;
+    color: #ffffff;
+    cursor: pointer;
+    font-size: 0.95rem;
+    padding: 0.625rem 1rem;
+}
+
+.business-button--secondary {
+    background: #486581;
+}
+
+.business-button:disabled {
+    background: #9fb3c8;
+    color: #f0f4f8;
+    cursor: not-allowed;
+}
+
+.business-actions {
+    margin-top: 2rem;
+}
+
+.business-note {
+    color: #52606d;
+    margin-top: 0.75rem;
+}
+
+.business-search-form {
+    align-items: flex-end;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.business-search-field {
+    display: flex;
+    flex: 1 1 180px;
+    flex-direction: column;
+    gap: 0.375rem;
+}
+
+.business-search-field__label {
+    font-weight: 600;
+}
+
+.business-search-field__control,
+.business-textarea {
+    border: 1px solid #bcccdc;
+    border-radius: 4px;
+    font-size: 0.95rem;
+    padding: 0.625rem 0.75rem;
+}
+
+.business-textarea {
+    box-sizing: border-box;
+    min-height: 8rem;
+    resize: vertical;
+    width: 100%;
+}
+
+.business-checkbox-cell {
+    text-align: center;
+    vertical-align: middle;
+    width: 4.5rem;
+}
+
+.business-action-row {
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+    margin-top: 2rem;
+}
+
+.business-action-row--right {
+    justify-content: flex-end;
+}
+
+.business-action-row form {
+    margin: 0;
+}
+
+.business-summary-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    margin: 0;
+}
+
+.business-summary-grid div {
+    background: #f8fafc;
+    border: 1px solid #d9e2ec;
+    border-radius: 6px;
+    padding: 0.75rem;
+}
+
+.business-summary-grid dt {
+    color: #486581;
+    font-weight: 600;
+    margin-bottom: 0.375rem;
+}
+
+.business-summary-grid dd {
+    margin: 0;
+}
+
+.business-preformatted {
+    background: #f8fafc;
+    border: 1px solid #d9e2ec;
+    border-radius: 6px;
+    margin: 0;
+    min-height: 3rem;
+    padding: 0.75rem;
+    white-space: pre-wrap;
+}
+
+.business-list {
+    color: #334e68;
+    margin: 0;
+    padding-left: 1.25rem;
+}
+
+.business-footer {
+    background: #eeeeee;
+    color: #333333;
+    font-size: 0.9rem;
+    margin-top: 2rem;
+    padding: 1rem 0;
+    text-align: center;
+}

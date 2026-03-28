@@ -1,0 +1,433 @@
+package net.shlab.hogefugapiyo.equipmentlending;
+
+import jakarta.persistence.EntityManager;
+import java.time.Clock;
+import java.time.Instant;
+import net.shlab.hogefugapiyo.equipmentlending.presentation.route.RoutePaths;
+import net.shlab.hogefugapiyo.equipmentlending.model.value.UserRole;
+import net.shlab.hogefugapiyo.framework.core.time.CurrentTimeProvider;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static net.shlab.hogefugapiyo.framework.security.SecurityMockMvcTestSupport.userPrincipal;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+class EquipmentLendingApplicationIntegrationTests {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private EntityManager entityManager;
+
+    @Autowired
+    private Clock clock;
+
+    @Autowired
+    private CurrentTimeProvider currentTimeProvider;
+
+    @Test
+    void contextLoads() {
+    }
+
+    @Test
+    void currentTimeProviderUsesConfiguredClock() {
+        Instant before = Instant.now(clock);
+        Instant actual = currentTimeProvider.currentInstant();
+        Instant after = Instant.now(clock);
+
+        assertThat(actual).isBetween(before, after);
+    }
+
+    @Test
+    void seedDataIsLoadedOnStartup() {
+        assertThat(countRows("M_USER")).isEqualTo(6);
+        assertThat(countRows("M_EQUIPMENT")).isEqualTo(22);
+        assertThat(countRows("T_LENDING_REQUEST")).isEqualTo(15);
+        assertThat(countRows("T_LENDING_REQUEST_DETAIL")).isEqualTo(24);
+        assertThat(countRowsByApplicant("USER01")).isZero();
+        assertThat(countRowsByApplicant("USER02")).isEqualTo(5);
+        assertThat(countRowsByApplicant("USER03")).isEqualTo(5);
+        assertThat(countRowsByApplicant("USER04")).isEqualTo(5);
+        assertThat(countRowsByStatus("PENDING_APPROVAL")).isEqualTo(3);
+        assertThat(countRowsByStatus("LENT")).isEqualTo(3);
+        assertThat(countRowsByStatus("PENDING_RETURN_CONFIRMATION")).isEqualTo(3);
+        assertThat(countRowsByStatus("REJECTED")).isEqualTo(3);
+        assertThat(countRowsByStatus("COMPLETED")).isEqualTo(3);
+        assertThat(countDetailsByRequest(2001L)).isEqualTo(2);
+        assertThat(countDetailsByRequest(2004L)).isEqualTo(2);
+        assertThat(countDetailsByRequest(2005L)).isEqualTo(2);
+        assertThat(countDetailsByRequest(2011L)).isEqualTo(2);
+        assertThat(countDetailsByRequest(2014L)).isEqualTo(2);
+        assertThat(countDetailsByRequest(2015L)).isEqualTo(2);
+        assertThat(countRows("H_LENDING_REQUEST_HISTORY")).isZero();
+        assertThat(countRows("H_LENDING_REQUEST_DETAIL_HISTORY")).isZero();
+        assertThat(countRows("H_EQUIPMENT_HISTORY")).isZero();
+    }
+
+    @Test
+    void userLoginRedirectsToUserMypage() throws Exception {
+        mockMvc.perform(post(RoutePaths.LOGIN)
+                        .with(csrf())
+                        .param("userId", "USER01")
+                        .param("password", "pass"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl(RoutePaths.HFP_ELV100_USER_MYPAGE));
+    }
+
+    @Test
+    void loginWithoutCsrfTokenIsForbidden() throws Exception {
+        mockMvc.perform(post(RoutePaths.LOGIN)
+                        .param("userId", "USER01")
+                        .param("password", "pass"))
+                .andExpect(status().isForbidden());
+    }
+
+
+    @Test
+    @Transactional
+    void userCanRegisterLendingRequestFromV400() throws Exception {
+        mockMvc.perform(post(RoutePaths.HFP_ELV400_USER_LENDING_REQUEST_LENDING)
+                        .with(csrf())
+                        .param("equipmentIds", "1009", "1010")
+                        .param("requestComment", "社内会議で利用する。")
+                        .with(userPrincipal("USER01", UserRole.USER)))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl(RoutePaths.HFP_ELV100_USER_MYPAGE + "?messageId=MSG_I_002"));
+
+        flushPersistenceContext();
+        long latestRequestId = latestRequestId();
+        assertThat(countRowsByApplicant("USER01")).isEqualTo(1);
+        assertThat(requestStatus(latestRequestId)).isEqualTo("PENDING_APPROVAL");
+        assertThat(requestComment(latestRequestId)).isEqualTo("社内会議で利用する。");
+        assertThat(countDetailsByRequest(latestRequestId)).isEqualTo(2);
+        assertThat(equipmentStatus(1009L)).isEqualTo("PENDING_LENDING");
+        assertThat(equipmentStatus(1010L)).isEqualTo("PENDING_LENDING");
+        assertHistoryRecorded(
+                latestRequestId,
+                "HFP-EL-SCS001_register-lending-request_service",
+                2,
+                2,
+                java.util.List.of(1009L, 1010L)
+        );
+    }
+
+    @Test
+    @Transactional
+    void userCanRegisterReturnRequestFromV400() throws Exception {
+        mockMvc.perform(post(RoutePaths.HFP_ELV400_USER_LENDING_REQUEST_RETURN)
+                        .with(csrf())
+                        .param("requestId", "2002")
+                        .param("version", "1")
+                        .param("returnRequestComment", "返却しました。")
+                        .with(userPrincipal("USER02", UserRole.USER)))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl(RoutePaths.HFP_ELV100_USER_MYPAGE + "?messageId=MSG_I_003"));
+
+        flushPersistenceContext();
+        assertThat(requestStatus(2002L)).isEqualTo("PENDING_RETURN_CONFIRMATION");
+        assertThat(returnRequestComment(2002L)).isEqualTo("返却しました。");
+        assertThat(requestVersion(2002L)).isEqualTo(2);
+        assertHistoryRecorded(
+                2002L,
+                "HFP-EL-SCS002_register-return-request_service",
+                0,
+                0,
+                java.util.List.of()
+        );
+    }
+
+    @Test
+    @Transactional
+    void userCanConfirmRejectedRequestFromV400() throws Exception {
+        mockMvc.perform(post(RoutePaths.HFP_ELV400_USER_LENDING_REQUEST_REJECTED_CONFIRM)
+                        .with(csrf())
+                        .param("requestId", "2004")
+                        .param("version", "1")
+                        .with(userPrincipal("USER02", UserRole.USER)))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl(RoutePaths.HFP_ELV100_USER_MYPAGE + "?messageId=MSG_I_004"));
+
+        flushPersistenceContext();
+        assertThat(requestStatus(2004L)).isEqualTo("COMPLETED");
+        assertThat(requestVersion(2004L)).isEqualTo(2);
+        assertThat(completedAt(2004L)).isNotNull();
+        assertHistoryRecorded(
+                2004L,
+                "HFP-EL-SCS003_confirm-rejected-request_service",
+                0,
+                0,
+                java.util.List.of()
+        );
+    }
+
+    @Test
+    void adminLoginRedirectsToAdminMypage() throws Exception {
+        mockMvc.perform(post(RoutePaths.LOGIN)
+                        .with(csrf())
+                        .param("userId", "ADMIN1")
+                        .param("password", "pass"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl(RoutePaths.HFP_ELV200_ADMIN_MYPAGE));
+    }
+
+    @Test
+    @Transactional
+    void adminCanApprovePendingApprovalRequestFromV500() throws Exception {
+        mockMvc.perform(post(RoutePaths.HFP_ELV500_ADMIN_LENDING_REVIEW_APPROVE)
+                        .with(csrf())
+                        .param("requestId", "2001")
+                        .param("version", "0")
+                        .param("reviewComment", "承認する。")
+                        .with(userPrincipal("ADMIN1", UserRole.ADMIN)))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl(RoutePaths.HFP_ELV200_ADMIN_MYPAGE + "?messageId=MSG_I_005"));
+
+        flushPersistenceContext();
+        assertThat(requestStatus(2001L)).isEqualTo("LENT");
+        assertThat(requestVersion(2001L)).isEqualTo(1);
+        assertThat(equipmentStatus(1001L)).isEqualTo("LENT");
+        assertThat(equipmentStatus(1004L)).isEqualTo("LENT");
+        assertHistoryRecorded(
+                2001L,
+                "HFP-EL-SCS010_approve-lending-request_service",
+                0,
+                2,
+                java.util.List.of(1001L, 1004L)
+        );
+    }
+
+    @Test
+    @Transactional
+    void adminCanRejectPendingApprovalRequestFromV500() throws Exception {
+        mockMvc.perform(post(RoutePaths.HFP_ELV500_ADMIN_LENDING_REVIEW_REJECT)
+                        .with(csrf())
+                        .param("requestId", "2001")
+                        .param("version", "0")
+                        .param("reviewComment", "今回は却下する。")
+                        .with(userPrincipal("ADMIN1", UserRole.ADMIN)))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl(RoutePaths.HFP_ELV200_ADMIN_MYPAGE + "?messageId=MSG_I_006"));
+
+        flushPersistenceContext();
+        assertThat(requestStatus(2001L)).isEqualTo("REJECTED");
+        assertThat(requestVersion(2001L)).isEqualTo(1);
+        assertThat(equipmentStatus(1001L)).isEqualTo("AVAILABLE");
+        assertThat(equipmentStatus(1004L)).isEqualTo("AVAILABLE");
+        assertHistoryRecorded(
+                2001L,
+                "HFP-EL-SCS011_reject-lending-request_service",
+                0,
+                2,
+                java.util.List.of(1001L, 1004L)
+        );
+    }
+
+    @Test
+    @Transactional
+    void adminCanConfirmReturnFromV500() throws Exception {
+        mockMvc.perform(post(RoutePaths.HFP_ELV500_ADMIN_LENDING_REVIEW_RETURN_CONFIRM)
+                        .with(csrf())
+                        .param("requestId", "2003")
+                        .param("version", "2")
+                        .param("returnConfirmComment", "返却を確認した。")
+                        .with(userPrincipal("ADMIN1", UserRole.ADMIN)))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl(RoutePaths.HFP_ELV200_ADMIN_MYPAGE + "?messageId=MSG_I_007"));
+
+        flushPersistenceContext();
+        assertThat(requestStatus(2003L)).isEqualTo("COMPLETED");
+        assertThat(requestVersion(2003L)).isEqualTo(3);
+        assertThat(equipmentStatus(1003L)).isEqualTo("AVAILABLE");
+        assertThat(completedAt(2003L)).isNotNull();
+        assertHistoryRecorded(
+                2003L,
+                "HFP-EL-SCS012_return-confirm_service",
+                0,
+                1,
+                java.util.List.of(1003L)
+        );
+    }
+
+
+    private long latestRequestId() {
+        Long requestId = jdbcTemplate.queryForObject(
+                "SELECT MAX(LENDING_REQUEST_ID) FROM T_LENDING_REQUEST",
+                Long.class
+        );
+        return requestId == null ? 0L : requestId;
+    }
+
+    private String requestStatus(long lendingRequestId) {
+        return jdbcTemplate.queryForObject(
+                "SELECT STATUS_CODE FROM T_LENDING_REQUEST WHERE LENDING_REQUEST_ID = ?",
+                String.class,
+                lendingRequestId
+        );
+    }
+
+    private String requestComment(long lendingRequestId) {
+        return jdbcTemplate.queryForObject(
+                "SELECT REQUEST_COMMENT FROM T_LENDING_REQUEST WHERE LENDING_REQUEST_ID = ?",
+                String.class,
+                lendingRequestId
+        );
+    }
+
+    private String returnRequestComment(long lendingRequestId) {
+        return jdbcTemplate.queryForObject(
+                "SELECT RETURN_REQUEST_COMMENT FROM T_LENDING_REQUEST WHERE LENDING_REQUEST_ID = ?",
+                String.class,
+                lendingRequestId
+        );
+    }
+
+    private int requestVersion(long lendingRequestId) {
+        Integer version = jdbcTemplate.queryForObject(
+                "SELECT VERSION FROM T_LENDING_REQUEST WHERE LENDING_REQUEST_ID = ?",
+                Integer.class,
+                lendingRequestId
+        );
+        return version == null ? -1 : version;
+    }
+
+    private String equipmentStatus(long equipmentId) {
+        return jdbcTemplate.queryForObject(
+                "SELECT STATUS_CODE FROM M_EQUIPMENT WHERE EQUIPMENT_ID = ?",
+                String.class,
+                equipmentId
+        );
+    }
+
+    private java.sql.Timestamp completedAt(long lendingRequestId) {
+        return jdbcTemplate.queryForObject(
+                "SELECT COMPLETED_AT FROM T_LENDING_REQUEST WHERE LENDING_REQUEST_ID = ?",
+                java.sql.Timestamp.class,
+                lendingRequestId
+        );
+    }
+
+    private int countRows(String tableName) {
+        Integer count = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM " + tableName, Integer.class);
+        return count == null ? 0 : count;
+    }
+
+    private int countRowsByApplicant(String applicantUserId) {
+        Integer count = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM T_LENDING_REQUEST WHERE APPLICANT_USER_ID = ?",
+                Integer.class,
+                applicantUserId
+        );
+        return count == null ? 0 : count;
+    }
+
+    private int countRowsByStatus(String statusCode) {
+        Integer count = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM T_LENDING_REQUEST WHERE STATUS_CODE = ?",
+                Integer.class,
+                statusCode
+        );
+        return count == null ? 0 : count;
+    }
+
+    private int countDetailsByRequest(long lendingRequestId) {
+        Integer count = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM T_LENDING_REQUEST_DETAIL WHERE LENDING_REQUEST_ID = ?",
+                Integer.class,
+                lendingRequestId
+        );
+        return count == null ? 0 : count;
+    }
+
+    private void assertHistoryRecorded(
+            long lendingRequestId,
+            String commandServiceId,
+            int expectedDetailHistoryCount,
+            int expectedEquipmentHistoryCount,
+            java.util.List<Long> equipmentIds
+    ) {
+        assertThat(countRequestHistoryByRequestId(lendingRequestId)).isEqualTo(1);
+        assertThat(countDetailHistoryByRequestId(lendingRequestId)).isEqualTo(expectedDetailHistoryCount);
+        assertThat(countRows("H_LENDING_REQUEST_HISTORY")).isEqualTo(1);
+        assertThat(countRows("H_LENDING_REQUEST_DETAIL_HISTORY")).isEqualTo(expectedDetailHistoryCount);
+        assertThat(countRows("H_EQUIPMENT_HISTORY")).isEqualTo(expectedEquipmentHistoryCount);
+        assertThat(singleDistinctValue("H_LENDING_REQUEST_HISTORY", "COMMAND_SERVICE_ID")).isEqualTo(commandServiceId);
+        assertThat(singleDistinctValue("H_LENDING_REQUEST_HISTORY", "OPERATION_ID")).isNotBlank();
+        assertThat(singleDistinctValue("H_LENDING_REQUEST_HISTORY", "OPERATED_AT")).isNotBlank();
+
+        if (expectedDetailHistoryCount > 0) {
+            assertThat(singleDistinctValue("H_LENDING_REQUEST_DETAIL_HISTORY", "COMMAND_SERVICE_ID")).isEqualTo(commandServiceId);
+            assertThat(singleDistinctValue("H_LENDING_REQUEST_DETAIL_HISTORY", "OPERATION_ID"))
+                    .isEqualTo(singleDistinctValue("H_LENDING_REQUEST_HISTORY", "OPERATION_ID"));
+            assertThat(singleDistinctValue("H_LENDING_REQUEST_DETAIL_HISTORY", "OPERATED_AT"))
+                    .isEqualTo(singleDistinctValue("H_LENDING_REQUEST_HISTORY", "OPERATED_AT"));
+        }
+
+        if (expectedEquipmentHistoryCount > 0) {
+            assertThat(singleDistinctValue("H_EQUIPMENT_HISTORY", "COMMAND_SERVICE_ID")).isEqualTo(commandServiceId);
+            assertThat(singleDistinctValue("H_EQUIPMENT_HISTORY", "OPERATION_ID"))
+                    .isEqualTo(singleDistinctValue("H_LENDING_REQUEST_HISTORY", "OPERATION_ID"));
+            assertThat(singleDistinctValue("H_EQUIPMENT_HISTORY", "OPERATED_AT"))
+                    .isEqualTo(singleDistinctValue("H_LENDING_REQUEST_HISTORY", "OPERATED_AT"));
+        }
+
+        for (Long equipmentId : equipmentIds) {
+            assertThat(countEquipmentHistoryByEquipmentId(equipmentId)).isEqualTo(1);
+        }
+    }
+
+    private int countRequestHistoryByRequestId(long lendingRequestId) {
+        Integer count = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM H_LENDING_REQUEST_HISTORY WHERE LENDING_REQUEST_ID = ?",
+                Integer.class,
+                lendingRequestId
+        );
+        return count == null ? 0 : count;
+    }
+
+    private int countDetailHistoryByRequestId(long lendingRequestId) {
+        Integer count = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM H_LENDING_REQUEST_DETAIL_HISTORY WHERE LENDING_REQUEST_ID = ?",
+                Integer.class,
+                lendingRequestId
+        );
+        return count == null ? 0 : count;
+    }
+
+    private int countEquipmentHistoryByEquipmentId(long equipmentId) {
+        Integer count = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM H_EQUIPMENT_HISTORY WHERE EQUIPMENT_ID = ?",
+                Integer.class,
+                equipmentId
+        );
+        return count == null ? 0 : count;
+    }
+
+    private String singleDistinctValue(String tableName, String columnName) {
+        java.util.List<String> values = jdbcTemplate.queryForList(
+                "SELECT DISTINCT " + columnName + " FROM " + tableName,
+                String.class
+        );
+        assertThat(values).hasSize(1);
+        return values.getFirst();
+    }
+
+    private void flushPersistenceContext() {
+        entityManager.flush();
+        entityManager.clear();
+    }
+}

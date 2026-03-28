@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="#{screen.elv100.title}">screen.elv100.title</title>
+    <link rel="stylesheet" th:href="@{/css/business-common.css}">
+</head>
+<body class="business-screen">
+    <div th:replace="~{fragments/fragment-hfp-el-common :: hfp_el_header_with_page_title(#{screen.elv100.title})}"></div>
+
+<main class="business-main">
+    <p class="business-message business-message--warning"
+       th:if="${warningMessage != null}"
+       th:text="${warningMessage}">warningMessage</p>
+    <p class="business-message business-message--error"
+       th:if="${errorMessage != null}"
+       th:text="${errorMessage}">errorMessage</p>
+    <p class="business-message business-message--info"
+       th:if="${infoMessage != null}"
+       th:text="${infoMessage}">infoMessage</p>
+    <h1 class="business-page-title" th:text="#{screen.elv100.title}">screen.elv100.title</h1>
+
+    <section class="business-section">
+        <h2 class="business-section__title" th:text="#{screen.elv100.lent-list}">screen.elv100.lent-list</h2>
+        <table class="business-table" th:if="${!#lists.isEmpty(lentRequests)}">
+            <thead>
+            <tr>
+                <th th:text="#{label.detail}">label.detail</th>
+                <th th:text="#{label.comment}">label.comment</th>
+                <th th:text="#{label.status}">label.status</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="lentRequest : ${lentRequests}">
+                <td>
+                    <form method="get" th:action="@{/hfp-elv400-user-lending-request}">
+                        <input name="from" type="hidden" value="V100">
+                        <input name="requestId" th:value="${lentRequest.lendingRequestId()}" type="hidden">
+                        <button class="business-button" th:text="#{label.detail}" type="submit">label.detail</button>
+                    </form>
+                </td>
+                <td th:text="${lentRequest.requestComment()}"></td>
+                <td th:text="${lentRequest.statusLabel()}"></td>
+            </tr>
+            </tbody>
+        </table>
+        <p class="business-message business-message--info"
+           th:if="${#lists.isEmpty(lentRequests)}"
+           th:text="#{screen.elv100.empty}">screen.elv100.empty</p>
+    </section>
+
+    <section class="business-section">
+        <h2 class="business-section__title" th:text="#{screen.elv100.pending-list}">screen.elv100.pending-list</h2>
+        <table class="business-table" th:if="${!#lists.isEmpty(pendingRequests)}">
+            <thead>
+            <tr>
+                <th th:text="#{label.detail}">label.detail</th>
+                <th th:text="#{label.comment}">label.comment</th>
+                <th th:text="#{screen.elv100.admin-comment}">screen.elv100.admin-comment</th>
+                <th th:text="#{label.status}">label.status</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="pendingRequest : ${pendingRequests}">
+                <td>
+                    <form method="get" th:action="@{/hfp-elv400-user-lending-request}">
+                        <input name="from" type="hidden" value="V100">
+                        <input name="requestId" th:value="${pendingRequest.lendingRequestId()}" type="hidden">
+                        <button class="business-button" th:text="#{label.detail}" type="submit">label.detail</button>
+                    </form>
+                </td>
+                <td th:text="${pendingRequest.requestComment()}"></td>
+                <td th:text="${pendingRequest.reviewComment()}"></td>
+                <td th:text="${pendingRequest.statusLabel()}"></td>
+            </tr>
+            </tbody>
+        </table>
+        <p class="business-message business-message--info"
+           th:if="${#lists.isEmpty(pendingRequests)}"
+           th:text="#{screen.elv100.empty}">screen.elv100.empty</p>
+    </section>
+
+    <div class="business-actions">
+        <form method="get" th:action="@{/hfp-elv300-equipment-search}">
+            <button class="business-button" type="submit" th:text="#{screen.elv100.search-equipment}">screen.elv100.search-equipment</button>
+        </form>
+    </div>
+</main>
+
+<div th:replace="~{fragments/fragment-hfp-el-common :: hfp_el_footer}"></div>
+</body>
+</html>

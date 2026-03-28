@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="#{screen.elv200.title}">screen.elv200.title</title>
+    <link rel="stylesheet" th:href="@{/css/business-common.css}">
+</head>
+<body class="business-screen">
+<div th:replace="~{fragments/fragment-hfp-el-common :: hfp_el_header_with_page_title(#{screen.elv200.title})}"></div>
+
+<main class="business-main">
+    <p class="business-message business-message--error"
+       th:if="${errorMessage != null}"
+       th:text="${errorMessage}">errorMessage</p>
+    <p class="business-message business-message--info"
+       th:if="${infoMessage != null}"
+       th:text="${infoMessage}">infoMessage</p>
+
+    <h1 class="business-page-title" th:text="#{screen.elv200.title}">screen.elv200.title</h1>
+
+    <section class="business-section">
+        <h2 class="business-section__title" th:text="#{screen.elv200.pending-approval-list}">screen.elv200.pending-approval-list</h2>
+        <table class="business-table" th:if="${!#lists.isEmpty(pendingApprovalRequests)}">
+            <thead>
+            <tr>
+                <th th:text="#{label.detail}">label.detail</th>
+                <th th:text="#{screen.elv200.request-id}">screen.elv200.request-id</th>
+                <th th:text="#{screen.elv200.applicant-user-id}">screen.elv200.applicant-user-id</th>
+                <th th:text="#{screen.elv200.request-comment}">screen.elv200.request-comment</th>
+                <th th:text="#{screen.elv200.requested-at}">screen.elv200.requested-at</th>
+                <th th:text="#{label.status}">label.status</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="request : ${pendingApprovalRequests}">
+                <td>
+                    <form method="get" th:action="@{/hfp-elv500-admin-lending-review}">
+                        <input name="requestId" th:value="${request.lendingRequestId()}" type="hidden">
+                        <button class="business-button" th:text="#{label.detail}" type="submit">label.detail</button>
+                    </form>
+                </td>
+                <td th:text="${request.lendingRequestId()}">2001</td>
+                <td th:text="${request.applicantUserId()}">USER02</td>
+                <td th:text="${request.comment()}">長机を申請する。</td>
+                <td th:text="${request.dateTime()}">2026-01-10 09:00</td>
+                <td th:text="${request.statusLabel()}">承認待ち</td>
+            </tr>
+            </tbody>
+        </table>
+        <p class="business-message business-message--info"
+           th:if="${#lists.isEmpty(pendingApprovalRequests)}"
+           th:text="#{screen.elv200.empty}">screen.elv200.empty</p>
+    </section>
+
+    <section class="business-section">
+        <h2 class="business-section__title" th:text="#{screen.elv200.pending-return-list}">screen.elv200.pending-return-list</h2>
+        <table class="business-table" th:if="${!#lists.isEmpty(pendingReturnRequests)}">
+            <thead>
+            <tr>
+                <th th:text="#{label.detail}">label.detail</th>
+                <th th:text="#{screen.elv200.request-id}">screen.elv200.request-id</th>
+                <th th:text="#{screen.elv200.applicant-user-id}">screen.elv200.applicant-user-id</th>
+                <th th:text="#{screen.elv200.return-request-comment}">screen.elv200.return-request-comment</th>
+                <th th:text="#{screen.elv200.return-requested-at}">screen.elv200.return-requested-at</th>
+                <th th:text="#{label.status}">label.status</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="request : ${pendingReturnRequests}">
+                <td>
+                    <form method="get" th:action="@{/hfp-elv500-admin-lending-review}">
+                        <input name="requestId" th:value="${request.lendingRequestId()}" type="hidden">
+                        <button class="business-button" th:text="#{label.detail}" type="submit">label.detail</button>
+                    </form>
+                </td>
+                <td th:text="${request.lendingRequestId()}">2003</td>
+                <td th:text="${request.applicantUserId()}">USER02</td>
+                <td th:text="${request.comment()}">返却したので確認を依頼する。</td>
+                <td th:text="${request.dateTime()}">2026-01-14 17:00</td>
+                <td th:text="${request.statusLabel()}">返却確認待ち</td>
+            </tr>
+            </tbody>
+        </table>
+        <p class="business-message business-message--info"
+           th:if="${#lists.isEmpty(pendingReturnRequests)}"
+           th:text="#{screen.elv200.empty}">screen.elv200.empty</p>
+    </section>
+</main>
+
+<div th:replace="~{fragments/fragment-hfp-el-common :: hfp_el_footer}"></div>
+</body>
+</html>

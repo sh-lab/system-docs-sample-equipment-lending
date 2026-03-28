@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="hfp_el_header">
+    <header class="business-header">
+        <h1 class="business-header__title" th:text="#{app.title}">app.title</h1>
+    </header>
+</div>
+
+<div th:fragment="hfp_el_header_with_page_title(pageTitle)">
+    <header class="business-header">
+        <h1 class="business-header__title"
+            th:text="#{app.title} + ':' + ${pageTitle}">app.title:pageTitle</h1>
+    </header>
+</div>
+
+<div th:fragment="hfp_el_footer">
+    <footer class="business-footer">
+        <p th:text="#{app.footer.copyright}">app.footer.copyright</p>
+    </footer>
+</div>
+</body>
+</html>

@@ -51,8 +51,8 @@ class EquipmentSearchQueryRepositoryDataJpaTest {
                     """
                     INSERT INTO M_EQUIPMENT (
                         EQUIPMENT_ID, EQUIPMENT_CODE, EQUIPMENT_NAME, EQUIPMENT_TYPE, STORAGE_LOCATION,
-                        STATUS_CODE, REMARKS, CREATED_AT, CREATED_BY, UPDATED_AT, UPDATED_BY, VERSION
-                    ) VALUES (?, ?, ?, ?, ?, 'AVAILABLE', NULL, TIMESTAMP '2026-01-01 09:00:00', 'SYSTEM',
+                        SYSTEM_REGISTERED_DATE, STATUS_CODE, REMARKS, CREATED_AT, CREATED_BY, UPDATED_AT, UPDATED_BY, VERSION
+                    ) VALUES (?, ?, ?, ?, ?, DATE '2026-01-01', 'AVAILABLE', NULL, TIMESTAMP '2026-01-01 09:00:00', 'SYSTEM',
                               TIMESTAMP '2026-01-01 09:00:00', 'SYSTEM', 0)
                     """,
                     equipmentId,
@@ -77,8 +77,8 @@ class EquipmentSearchQueryRepositoryDataJpaTest {
                 """
                 INSERT INTO M_EQUIPMENT (
                     EQUIPMENT_ID, EQUIPMENT_CODE, EQUIPMENT_NAME, EQUIPMENT_TYPE, STORAGE_LOCATION,
-                    STATUS_CODE, REMARKS, CREATED_AT, CREATED_BY, UPDATED_AT, UPDATED_BY, VERSION
-                ) VALUES (?, ?, ?, ?, ?, ?, NULL, TIMESTAMP '2026-01-01 09:00:00', 'SYSTEM',
+                    SYSTEM_REGISTERED_DATE, STATUS_CODE, REMARKS, CREATED_AT, CREATED_BY, UPDATED_AT, UPDATED_BY, VERSION
+                ) VALUES (?, ?, ?, ?, ?, DATE '2026-01-01', ?, NULL, TIMESTAMP '2026-01-01 09:00:00', 'SYSTEM',
                           TIMESTAMP '2026-01-01 09:00:00', 'SYSTEM', 0)
                 """,
                 3001,
@@ -90,7 +90,7 @@ class EquipmentSearchQueryRepositoryDataJpaTest {
         );
 
         var items = equipmentSearchQueryRepository.findEquipmentByCriteria(
-                new EquipmentSearchQueryRepository.Criteria("", "", "UNAVAILABLE")
+                new EquipmentSearchQueryRepository.Criteria("", "", "NOT_AVAILABLE")
         );
 
         assertThat(items)

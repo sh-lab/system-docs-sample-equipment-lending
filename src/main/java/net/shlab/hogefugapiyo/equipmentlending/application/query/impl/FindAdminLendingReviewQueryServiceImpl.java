@@ -63,7 +63,7 @@ public class FindAdminLendingReviewQueryServiceImpl implements FindAdminLendingR
                 equipmentRow.equipmentId(),
                 equipmentRow.equipmentCode(),
                 equipmentRow.equipmentName(),
-                toEquipmentTypeLabel(equipmentRow.equipmentTypeCode()),
+                equipmentRow.equipmentTypeName(),
                 equipmentRow.storageLocation()
         );
     }
@@ -87,12 +87,4 @@ public class FindAdminLendingReviewQueryServiceImpl implements FindAdminLendingR
         };
     }
 
-    private String toEquipmentTypeLabel(String equipmentTypeCode) {
-        return switch (equipmentTypeCode) {
-            case "DESK" -> i18nMessageResolver.get("label.equipment-type.desk");
-            case "PIPE_CHAIR" -> i18nMessageResolver.get("label.equipment-type.pipe-chair");
-            case "PROJECTOR" -> i18nMessageResolver.get("label.equipment-type.projector");
-            default -> equipmentTypeCode;
-        };
-    }
 }

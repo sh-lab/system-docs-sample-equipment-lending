@@ -13,7 +13,7 @@ import net.shlab.hogefugapiyo.equipmentlending.application.HfpElSas201AdminMypag
 import net.shlab.hogefugapiyo.equipmentlending.presentation.route.RoutePaths;
 import net.shlab.hogefugapiyo.equipmentlending.model.value.UserRole;
 import net.shlab.hogefugapiyo.framework.i18n.I18nMessageResolver;
-import net.shlab.hogefugapiyo.framework.security.config.SecurityConfiguration;
+import net.shlab.hogefugapiyo.equipmentlending.infrastructure.security.config.SecurityConfiguration;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -49,6 +49,7 @@ class HfpElV200AdminMypageControllerWebMvcTest {
                 .andExpect(content().string(containsString("承認待ち申請一覧")))
                 .andExpect(content().string(containsString("返却確認待ち申請一覧")))
                 .andExpect(content().string(containsString("長机を申請する。")))
-                .andExpect(content().string(containsString(RoutePaths.HFP_ELV500_ADMIN_LENDING_REVIEW)));
+                .andExpect(content().string(containsString(RoutePaths.HFP_ELV500_ADMIN_LENDING_REVIEW)))
+                .andExpect(content().string(containsString(RoutePaths.HFP_ELV600_ADMIN_EQUIPMENT_SEARCH)));
     }
 }

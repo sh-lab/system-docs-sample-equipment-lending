@@ -5,7 +5,7 @@ import java.util.List;
 import net.shlab.hogefugapiyo.equipmentlending.application.HfpElSas101UserMypageInitApplicationService;
 import net.shlab.hogefugapiyo.equipmentlending.presentation.route.RoutePaths;
 import net.shlab.hogefugapiyo.equipmentlending.model.value.UserRole;
-import net.shlab.hogefugapiyo.framework.security.config.SecurityConfiguration;
+import net.shlab.hogefugapiyo.equipmentlending.infrastructure.security.config.SecurityConfiguration;
 import net.shlab.hogefugapiyo.framework.i18n.I18nMessageResolver;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

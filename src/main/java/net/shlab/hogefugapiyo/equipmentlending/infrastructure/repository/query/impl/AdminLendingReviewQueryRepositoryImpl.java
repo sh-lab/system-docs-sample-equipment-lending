@@ -56,9 +56,11 @@ public class AdminLendingReviewQueryRepositoryImpl implements AdminLendingReview
     private List<EquipmentRow> findEquipmentItems(long lendingRequestId) {
         return jdbcTemplate.query(
                 """
-                SELECT e.EQUIPMENT_ID, e.EQUIPMENT_CODE, e.EQUIPMENT_NAME, e.EQUIPMENT_TYPE, e.STORAGE_LOCATION
+                SELECT e.EQUIPMENT_ID, e.EQUIPMENT_CODE, e.EQUIPMENT_NAME, e.EQUIPMENT_TYPE,
+                       t.EQUIPMENT_TYPE_NAME, e.STORAGE_LOCATION
                 FROM T_LENDING_REQUEST_DETAIL d
                 JOIN M_EQUIPMENT e ON e.EQUIPMENT_ID = d.EQUIPMENT_ID
+                JOIN M_EQUIPMENT_TYPE t ON t.EQUIPMENT_TYPE_CODE = e.EQUIPMENT_TYPE
                 WHERE d.LENDING_REQUEST_ID = ?
                 ORDER BY e.EQUIPMENT_CODE ASC
                 """,
@@ -67,6 +69,7 @@ public class AdminLendingReviewQueryRepositoryImpl implements AdminLendingReview
                         rs.getString("EQUIPMENT_CODE"),
                         rs.getString("EQUIPMENT_NAME"),
                         rs.getString("EQUIPMENT_TYPE"),
+                        rs.getString("EQUIPMENT_TYPE_NAME"),
                         rs.getString("STORAGE_LOCATION")
                 ),
                 lendingRequestId

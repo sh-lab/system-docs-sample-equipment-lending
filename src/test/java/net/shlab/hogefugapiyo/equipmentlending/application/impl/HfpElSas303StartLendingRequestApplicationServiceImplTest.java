@@ -8,9 +8,8 @@ import java.util.List;
 import net.shlab.hogefugapiyo.equipmentlending.application.BusinessException;
 import net.shlab.hogefugapiyo.equipmentlending.application.command.LendingRequestAvailabilityResult;
 import net.shlab.hogefugapiyo.equipmentlending.application.pure.CheckLendingRequestAvailabilityService;
-import net.shlab.hogefugapiyo.equipmentlending.infrastructure.repository.entity.EquipmentRepository;
-import net.shlab.hogefugapiyo.equipmentlending.model.entity.Equipment;
-import net.shlab.hogefugapiyo.equipmentlending.model.value.EquipmentStatus;
+import net.shlab.hogefugapiyo.equipmentlending.application.pure.EquipmentAvailabilityInput;
+import net.shlab.hogefugapiyo.equipmentlending.application.query.FindEquipmentByIdsQueryService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -21,7 +20,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class HfpElSas303StartLendingRequestApplicationServiceImplTest {
 
     @Mock
-    private EquipmentRepository equipmentRepository;
+    private FindEquipmentByIdsQueryService findEquipmentByIdsQueryService;
 
     @Mock
     private CheckLendingRequestAvailabilityService checkLendingRequestAvailabilityService;
@@ -32,9 +31,17 @@ class HfpElSas303StartLendingRequestApplicationServiceImplTest {
     @Test
     void startReturnsEquipmentIdsWhenAllSelectedEquipmentIsAvailable() {
         List<Long> equipmentIds = List.of(1001L, 1004L);
-        List<Equipment> equipments = List.of(equipment(1001L, EquipmentStatus.AVAILABLE), equipment(1004L, EquipmentStatus.AVAILABLE));
-        when(equipmentRepository.findByIds(equipmentIds)).thenReturn(equipments);
-        when(checkLendingRequestAvailabilityService.check(equipments))
+        var queryResponse = new FindEquipmentByIdsQueryService.Response(List.of(
+                equipmentItem(1001L, "AVAILABLE"),
+                equipmentItem(1004L, "AVAILABLE")
+        ));
+        when(findEquipmentByIdsQueryService.execute(new FindEquipmentByIdsQueryService.Request(equipmentIds)))
+                .thenReturn(queryResponse);
+        List<EquipmentAvailabilityInput> inputs = List.of(
+                new EquipmentAvailabilityInput(1001L, "AVAILABLE"),
+                new EquipmentAvailabilityInput(1004L, "AVAILABLE")
+        );
+        when(checkLendingRequestAvailabilityService.check(inputs))
                 .thenReturn(new LendingRequestAvailabilityResult(true, List.of(), List.of()));
 
         List<Long> actual = applicationService.start(equipmentIds);
@@ -45,9 +52,17 @@ class HfpElSas303StartLendingRequestApplicationServiceImplTest {
     @Test
     void startThrowsBusinessExceptionWhenUnavailableEquipmentIsIncluded() {
         List<Long> equipmentIds = List.of(1001L, 1004L);
-        List<Equipment> equipments = List.of(equipment(1001L, EquipmentStatus.AVAILABLE), equipment(1004L, EquipmentStatus.PENDING_LENDING));
-        when(equipmentRepository.findByIds(equipmentIds)).thenReturn(equipments);
-        when(checkLendingRequestAvailabilityService.check(equipments))
+        var queryResponse = new FindEquipmentByIdsQueryService.Response(List.of(
+                equipmentItem(1001L, "AVAILABLE"),
+                equipmentItem(1004L, "PENDING_LENDING")
+        ));
+        when(findEquipmentByIdsQueryService.execute(new FindEquipmentByIdsQueryService.Request(equipmentIds)))
+                .thenReturn(queryResponse);
+        List<EquipmentAvailabilityInput> inputs = List.of(
+                new EquipmentAvailabilityInput(1001L, "AVAILABLE"),
+                new EquipmentAvailabilityInput(1004L, "PENDING_LENDING")
+        );
+        when(checkLendingRequestAvailabilityService.check(inputs))
                 .thenReturn(new LendingRequestAvailabilityResult(false, List.of(1004L), List.of("PENDING_LENDING")));
 
         assertThatThrownBy(() -> applicationService.start(equipmentIds))
@@ -56,10 +71,10 @@ class HfpElSas303StartLendingRequestApplicationServiceImplTest {
                 .isEqualTo("MSG_E_001");
     }
 
-    private Equipment equipment(long equipmentId, EquipmentStatus status) {
-        Equipment equipment = new Equipment();
-        equipment.setEquipmentId(equipmentId);
-        equipment.setStatus(status);
-        return equipment;
+    private FindEquipmentByIdsQueryService.EquipmentItem equipmentItem(long equipmentId, String statusCode) {
+        return new FindEquipmentByIdsQueryService.EquipmentItem(
+                equipmentId, "EQ-" + equipmentId, "Equipment " + equipmentId,
+                "TYPE1", "タイプ1", "倉庫A", statusCode
+        );
     }
 }

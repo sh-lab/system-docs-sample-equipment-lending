@@ -86,6 +86,12 @@
            th:if="${#lists.isEmpty(pendingReturnRequests)}"
            th:text="#{screen.elv200.empty}">screen.elv200.empty</p>
     </section>
+
+    <div class="business-action-row">
+        <form method="get" th:action="@{/hfp-elv600-admin-equipment-search}">
+            <button class="business-button" th:text="#{screen.elv200.admin-equipment-search}" type="submit">screen.elv200.admin-equipment-search</button>
+        </form>
+    </div>
 </main>
 
 <div th:replace="~{fragments/fragment-hfp-el-common :: hfp_el_footer}"></div>

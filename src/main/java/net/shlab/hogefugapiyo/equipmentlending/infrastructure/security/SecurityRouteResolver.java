@@ -1,4 +1,4 @@
-package net.shlab.hogefugapiyo.framework.security;
+package net.shlab.hogefugapiyo.equipmentlending.infrastructure.security;
 
 import net.shlab.hogefugapiyo.equipmentlending.presentation.route.RoutePaths;
 import net.shlab.hogefugapiyo.equipmentlending.model.value.UserRole;

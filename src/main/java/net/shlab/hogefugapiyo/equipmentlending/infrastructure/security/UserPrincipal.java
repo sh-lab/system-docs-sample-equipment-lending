@@ -1,4 +1,4 @@
-package net.shlab.hogefugapiyo.framework.security;
+package net.shlab.hogefugapiyo.equipmentlending.infrastructure.security;
 
 import java.io.Serializable;
 import java.util.Collection;

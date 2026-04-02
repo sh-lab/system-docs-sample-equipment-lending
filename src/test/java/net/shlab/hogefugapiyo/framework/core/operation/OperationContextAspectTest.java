@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import net.shlab.hogefugapiyo.framework.core.service.ApplicationService;
+import net.shlab.hogefugapiyo.framework.operation.OperationContextAspect;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.aop.aspectj.annotation.AspectJProxyFactory;

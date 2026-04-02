@@ -6,7 +6,7 @@ import net.shlab.hogefugapiyo.framework.core.repository.QueryRepository;
 
 public interface AdminLendingReviewQueryRepository extends QueryRepository {
     record EquipmentRow(long equipmentId, String equipmentCode, String equipmentName,
-                        String equipmentTypeCode, String storageLocation) {
+                        String equipmentTypeCode, String equipmentTypeName, String storageLocation) {
     }
 
     record DetailRow(long lendingRequestId, String applicantUserId, String statusCode,

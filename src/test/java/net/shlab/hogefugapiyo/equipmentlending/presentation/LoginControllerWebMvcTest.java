@@ -22,7 +22,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import net.shlab.hogefugapiyo.framework.security.config.SecurityConfiguration;
+import net.shlab.hogefugapiyo.equipmentlending.infrastructure.security.config.SecurityConfiguration;
 
 @WebMvcTest(LoginController.class)
 @Import(SecurityConfiguration.class)
@@ -107,6 +107,16 @@ class LoginControllerWebMvcTest {
                         .param("password", "wrong"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString(INVALID_CREDENTIALS_MESSAGE)))
+                .andExpect(content().string(containsString("ログイン")));
+    }
+
+    @Test
+    void missingUserIdRedisplaysLoginPageWithValidationMessage() throws Exception {
+        mockMvc.perform(post(RoutePaths.LOGIN)
+                        .with(csrf())
+                        .param("password", "pass"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("ユーザーIDを入力してください。")))
                 .andExpect(content().string(containsString("ログイン")));
     }
 

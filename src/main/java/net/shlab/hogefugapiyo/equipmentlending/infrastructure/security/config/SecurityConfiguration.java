@@ -1,9 +1,9 @@
-package net.shlab.hogefugapiyo.framework.security.config;
+package net.shlab.hogefugapiyo.equipmentlending.infrastructure.security.config;
 
 import jakarta.servlet.http.HttpServletResponse;
 import net.shlab.hogefugapiyo.equipmentlending.presentation.route.RoutePaths;
-import net.shlab.hogefugapiyo.framework.security.SecurityRouteResolver;
-import net.shlab.hogefugapiyo.framework.security.UserPrincipal;
+import net.shlab.hogefugapiyo.equipmentlending.infrastructure.security.SecurityRouteResolver;
+import net.shlab.hogefugapiyo.equipmentlending.infrastructure.security.UserPrincipal;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

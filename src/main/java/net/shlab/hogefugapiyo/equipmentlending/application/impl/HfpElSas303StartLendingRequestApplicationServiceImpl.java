@@ -6,8 +6,8 @@ import net.shlab.hogefugapiyo.equipmentlending.application.BusinessException;
 import net.shlab.hogefugapiyo.equipmentlending.application.BusinessMessageIds;
 import net.shlab.hogefugapiyo.equipmentlending.application.HfpElSas303StartLendingRequestApplicationService;
 import net.shlab.hogefugapiyo.equipmentlending.application.pure.CheckLendingRequestAvailabilityService;
-import net.shlab.hogefugapiyo.equipmentlending.infrastructure.repository.entity.EquipmentRepository;
-import net.shlab.hogefugapiyo.equipmentlending.model.entity.Equipment;
+import net.shlab.hogefugapiyo.equipmentlending.application.pure.EquipmentAvailabilityInput;
+import net.shlab.hogefugapiyo.equipmentlending.application.query.FindEquipmentByIdsQueryService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,25 +19,29 @@ import org.springframework.transaction.annotation.Transactional;
 public class HfpElSas303StartLendingRequestApplicationServiceImpl
         implements HfpElSas303StartLendingRequestApplicationService {
 
-    private final EquipmentRepository equipmentRepository;
+    private final FindEquipmentByIdsQueryService findEquipmentByIdsQueryService;
     private final CheckLendingRequestAvailabilityService checkLendingRequestAvailabilityService;
 
     public HfpElSas303StartLendingRequestApplicationServiceImpl(
-            EquipmentRepository equipmentRepository,
+            FindEquipmentByIdsQueryService findEquipmentByIdsQueryService,
             CheckLendingRequestAvailabilityService checkLendingRequestAvailabilityService
     ) {
-        this.equipmentRepository = equipmentRepository;
+        this.findEquipmentByIdsQueryService = findEquipmentByIdsQueryService;
         this.checkLendingRequestAvailabilityService = checkLendingRequestAvailabilityService;
     }
 
     @Override
     public List<Long> start(List<Long> equipmentIds) {
         List<Long> normalizedEquipmentIds = normalizeEquipmentIds(equipmentIds);
-        List<Equipment> equipments = equipmentRepository.findByIds(normalizedEquipmentIds);
-        if (equipments.size() != normalizedEquipmentIds.size()) {
+        var response = findEquipmentByIdsQueryService.execute(
+                new FindEquipmentByIdsQueryService.Request(normalizedEquipmentIds));
+        if (response.items().size() != normalizedEquipmentIds.size()) {
             throw new BusinessException(BusinessMessageIds.EQUIPMENT_SELECTION_INVALID);
         }
-        var availability = checkLendingRequestAvailabilityService.check(equipments);
+        List<EquipmentAvailabilityInput> inputs = response.items().stream()
+                .map(item -> new EquipmentAvailabilityInput(item.equipmentId(), item.statusCode()))
+                .toList();
+        var availability = checkLendingRequestAvailabilityService.check(inputs);
         if (!availability.valid()) {
             throw new BusinessException(BusinessMessageIds.EQUIPMENT_SELECTION_INVALID);
         }

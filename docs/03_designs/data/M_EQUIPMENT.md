@@ -22,6 +22,7 @@
 ## 3. 対応エンティティ・関連
 - 対応エンティティ：`HFP-EL-E001_equipment`
 - 関連エンティティ：
+  - `HFP-EL-E004_equipment-type：N:1`
   - `HFP-EL-E003_lending-request：1:N`
   - `H_EQUIPMENT_HISTORY：1:N`
 
@@ -34,8 +35,9 @@
 | 備品ID | EQUIPMENT_ID | BIGINT | ○ | PK | - | 備品を一意に識別する内部ID |
 | 備品管理番号 | EQUIPMENT_CODE | VARCHAR(30) | ○ | - | - | 運用上の管理番号 |
 | 備品名 | EQUIPMENT_NAME | VARCHAR(100) | ○ | - | - | 利用者向け表示名 |
-| 備品種別 | EQUIPMENT_TYPE | VARCHAR(40) | ○ | - | - | 検索条件に利用する粗い分類。数量差は `EQUIPMENT_NAME` で表現する |
+| 備品種別 | EQUIPMENT_TYPE | VARCHAR(40) | ○ | - | - | 備品種別マスタを参照する種別コード |
 | 保管場所 | STORAGE_LOCATION | VARCHAR(100) | ○ | - | - | 通常保管場所 |
+| システム登録日 | SYSTEM_REGISTERED_DATE | DATE | ○ | - | - | 備品をシステムへ登録した日付。管理者備品検索で利用する |
 | 備品状態コード | STATUS_CODE | VARCHAR(20) | ○ | - | `AVAILABLE` | `AVAILABLE`、`PENDING_LENDING`、`LENT`、`UNAVAILABLE`、`DISPOSED` のいずれかを表すコード値 |
 | 備考 | REMARKS | VARCHAR(500) | - | - | - | 補足事項 |
 
@@ -53,9 +55,10 @@
 
 ## 6. 外部キー制約（必要な場合）
 
-現時点では定義しない。
+- 外部キー：
+  - `FK_M_EQUIPMENT_01`（`EQUIPMENT_TYPE` → `M_EQUIPMENT_TYPE.EQUIPMENT_TYPE_CODE`）
 
-関連マスタを分割しない方針であるため、備品種別・保管場所・状態コードは本テーブル内に保持する。
+保管場所・状態コードは本テーブル内に保持する。
 
 ---
 
@@ -65,6 +68,7 @@
 |----------------|--------|----------|------|
 | IDX_M_EQUIPMENT_01 | EQUIPMENT_NAME | × | 備品名検索の性能向上 |
 | IDX_M_EQUIPMENT_02 | EQUIPMENT_TYPE, STATUS_CODE | × | 備品種別・貸出可否条件による検索の性能向上 |
+| IDX_M_EQUIPMENT_03 | SYSTEM_REGISTERED_DATE, STATUS_CODE | × | 管理者備品検索における登録日・状態条件検索の性能向上 |
 
 ---
 
@@ -97,11 +101,12 @@
 
 ## 10. データ正規化・注意事項
 - 正規化レベルは第3正規形を原則とする。
-- 初回設計では単一の備品マスタのみを対象とするため、備品種別・保管場所・状態コードは別マスタへ分割しない。
+- 備品種別は `M_EQUIPMENT_TYPE` で管理し、本テーブルではコード値を保持する。
 - enum 相当の値はコード値で保持し、表示名はアプリケーション側で解決する。
-- `EQUIPMENT_TYPE` は `DESK`、`PIPE_CHAIR`、`PROJECTOR` のような粗い分類を保持し、`長机 2台` / `長机 3台` のような数量差は `EQUIPMENT_NAME` で表現する。
+- `EQUIPMENT_TYPE` は `M_EQUIPMENT_TYPE.EQUIPMENT_TYPE_CODE` と一致する値を保持し、表示名は備品種別マスタから解決する。
+- `SYSTEM_REGISTERED_DATE` は備品登録時点の日付を保持し、更新しない。
 - `STATUS_CODE` は `AVAILABLE`、`PENDING_LENDING`、`LENT`、`UNAVAILABLE`、`DISPOSED` を許可値とする。
-- `UNAVAILABLE` および `DISPOSED` は次期開発用の予約値として保持する。
+- `UNAVAILABLE` および `DISPOSED` は管理者による状態更新で利用する。
 - 状態変更の追跡に必要な `operationId`、`commandServiceId`、`operatedAt` は `H_EQUIPMENT_HISTORY` に分離し、本テーブルへは保持しない。
 
 ---
@@ -109,7 +114,7 @@
 ## 11. マイグレーション・変更管理
 - DDL 変更は履歴管理されたマイグレーション手順で行う。
 - 既存データへの影響確認を必須とする。
-- 関連マスタ分割を行う場合は、既存コード値との移行方針を別途設計する。
+- 備品種別マスタの候補変更時は、既存コード値との整合を確認する。
 
 ---
 

@@ -4,9 +4,9 @@ import net.shlab.hogefugapiyo.equipmentlending.application.query.FindAdminMypage
 import net.shlab.hogefugapiyo.equipmentlending.application.HfpElSas201AdminMypageInitApplicationService;
 import net.shlab.hogefugapiyo.equipmentlending.presentation.route.RoutePaths;
 import net.shlab.hogefugapiyo.equipmentlending.presentation.views.Views;
-import net.shlab.hogefugapiyo.framework.core.controller.AbstractBaseController;
+import net.shlab.hogefugapiyo.equipmentlending.presentation.controller.AbstractBaseController;
 import net.shlab.hogefugapiyo.framework.i18n.I18nMessageResolver;
-import net.shlab.hogefugapiyo.framework.security.UserPrincipal;
+import net.shlab.hogefugapiyo.equipmentlending.infrastructure.security.UserPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -29,14 +29,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class HfpElV200AdminMypageController extends AbstractBaseController {
 
     private final HfpElSas201AdminMypageInitApplicationService adminMypageInitApplicationService;
-    private final I18nMessageResolver i18nMessageResolver;
 
     public HfpElV200AdminMypageController(
             HfpElSas201AdminMypageInitApplicationService adminMypageInitApplicationService,
             I18nMessageResolver i18nMessageResolver
     ) {
+        super(i18nMessageResolver);
         this.adminMypageInitApplicationService = adminMypageInitApplicationService;
-        this.i18nMessageResolver = i18nMessageResolver;
     }
 
     @GetMapping(RoutePaths.HFP_ELV200_ADMIN_MYPAGE)
@@ -52,9 +51,5 @@ public class HfpElV200AdminMypageController extends AbstractBaseController {
         model.addAttribute("infoMessage", resolveMessage(messageId));
         model.addAttribute("errorMessage", resolveMessage(errorMessageId));
         return Views.HFP_ELV200_ADMIN_MYPAGE;
-    }
-
-    private String resolveMessage(String messageId) {
-        return messageId == null || messageId.isBlank() ? null : i18nMessageResolver.getBusinessMessage(messageId);
     }
 }

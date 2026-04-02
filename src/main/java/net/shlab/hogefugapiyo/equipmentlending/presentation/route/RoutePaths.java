@@ -23,6 +23,10 @@ public final class RoutePaths {
     public static final String HFP_ELV500_ADMIN_LENDING_REVIEW_REJECT = HFP_ELV500_ADMIN_LENDING_REVIEW + "/reject";
     public static final String HFP_ELV500_ADMIN_LENDING_REVIEW_RETURN_CONFIRM =
             HFP_ELV500_ADMIN_LENDING_REVIEW + "/return-confirm";
+    public static final String HFP_ELV600_ADMIN_EQUIPMENT_SEARCH = "/" + Views.HFP_ELV600_ADMIN_EQUIPMENT_SEARCH;
+    public static final String HFP_ELV700_ADMIN_EQUIPMENT_EDIT = "/" + Views.HFP_ELV700_ADMIN_EQUIPMENT_EDIT;
+    public static final String HFP_ELV700_ADMIN_EQUIPMENT_EDIT_REGISTER = HFP_ELV700_ADMIN_EQUIPMENT_EDIT + "/register";
+    public static final String HFP_ELV700_ADMIN_EQUIPMENT_EDIT_UPDATE = HFP_ELV700_ADMIN_EQUIPMENT_EDIT + "/update";
 
     private RoutePaths() {
     }

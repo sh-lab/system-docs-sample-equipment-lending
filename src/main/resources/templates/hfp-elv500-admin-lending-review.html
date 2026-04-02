@@ -13,6 +13,11 @@
     <p class="business-message business-message--error"
        th:if="${errorMessage != null}"
        th:text="${errorMessage}">errorMessage</p>
+    <div class="business-message business-message--error" th:if="${validationErrors != null and !#lists.isEmpty(validationErrors)}">
+        <ul class="business-message__list">
+            <li th:each="validationError : ${validationErrors}" th:text="${validationError}">validationError</li>
+        </ul>
+    </div>
     <p class="business-message business-message--info"
        th:if="${infoMessage != null}"
        th:text="${infoMessage}">infoMessage</p>
@@ -86,6 +91,7 @@
                 <input name="requestId" th:value="${viewData.selectedRequest().lendingRequestId()}" type="hidden">
                 <input name="version" th:value="${viewData.selectedRequest().version()}" type="hidden">
                 <textarea class="business-textarea" name="reviewComment" rows="5" th:text="${reviewComment}"></textarea>
+                <p class="business-field-error" th:if="${fieldErrors != null and fieldErrors['reviewComment'] != null}" th:text="${fieldErrors['reviewComment']}">fieldError</p>
                 <div class="business-action-row business-action-row--right">
                     <button class="business-button" th:formaction="@{/hfp-elv500-admin-lending-review/approve}" th:text="#{screen.elv500.approve}" type="submit">screen.elv500.approve</button>
                     <button class="business-button business-button--secondary" th:formaction="@{/hfp-elv500-admin-lending-review/reject}" th:text="#{screen.elv500.reject}" type="submit">screen.elv500.reject</button>
@@ -107,6 +113,7 @@
             <input name="requestId" th:value="${viewData.selectedRequest().lendingRequestId()}" type="hidden">
             <input name="version" th:value="${viewData.selectedRequest().version()}" type="hidden">
             <textarea class="business-textarea" name="returnConfirmComment" rows="5" th:text="${returnConfirmComment}"></textarea>
+            <p class="business-field-error" th:if="${fieldErrors != null and fieldErrors['returnConfirmComment'] != null}" th:text="${fieldErrors['returnConfirmComment']}">fieldError</p>
             <div class="business-action-row business-action-row--right">
                 <button class="business-button" th:text="#{screen.elv500.return-confirm}" type="submit">screen.elv500.return-confirm</button>
             </div>

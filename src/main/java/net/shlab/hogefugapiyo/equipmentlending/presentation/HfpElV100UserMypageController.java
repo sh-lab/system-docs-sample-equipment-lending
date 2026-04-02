@@ -4,9 +4,9 @@ import net.shlab.hogefugapiyo.equipmentlending.application.query.FindUserMypageQ
 import net.shlab.hogefugapiyo.equipmentlending.application.HfpElSas101UserMypageInitApplicationService;
 import net.shlab.hogefugapiyo.equipmentlending.presentation.route.RoutePaths;
 import net.shlab.hogefugapiyo.equipmentlending.presentation.views.Views;
-import net.shlab.hogefugapiyo.framework.core.controller.AbstractBaseController;
+import net.shlab.hogefugapiyo.equipmentlending.presentation.controller.AbstractBaseController;
 import net.shlab.hogefugapiyo.framework.i18n.I18nMessageResolver;
-import net.shlab.hogefugapiyo.framework.security.UserPrincipal;
+import net.shlab.hogefugapiyo.equipmentlending.infrastructure.security.UserPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -37,6 +37,7 @@ public class HfpElV100UserMypageController extends AbstractBaseController {
             HfpElSas101UserMypageInitApplicationService userMypageInitApplicationService,
             I18nMessageResolver i18nMessageResolver
     ) {
+        super(i18nMessageResolver);
         this.userMypageInitApplicationService = userMypageInitApplicationService;
         this.i18nMessageResolver = i18nMessageResolver;
     }

@@ -11,6 +11,9 @@ public final class BusinessMessageIds {
     public static final String APPROVE_REQUEST_COMPLETED = "MSG_I_005";
     public static final String REJECT_REQUEST_COMPLETED = "MSG_I_006";
     public static final String RETURN_CONFIRM_COMPLETED = "MSG_I_007";
+    public static final String EQUIPMENT_REGISTER_COMPLETED = "MSG_I_008";
+    public static final String EQUIPMENT_STATUS_UPDATE_COMPLETED = "MSG_I_009";
+    public static final String EQUIPMENT_STATUS_UPDATE_RESTRICTED = "MSG_E_010";
     public static final String EQUIPMENT_SELECTION_INVALID = "MSG_E_001";
     public static final String RETURN_REQUEST_INVALID = "MSG_E_002";
     public static final String REJECTED_CONFIRM_INVALID = "MSG_E_003";
@@ -18,6 +21,8 @@ public final class BusinessMessageIds {
     public static final String APPROVE_REQUEST_INVALID = "MSG_E_005";
     public static final String REJECT_REQUEST_INVALID = "MSG_E_006";
     public static final String RETURN_CONFIRM_INVALID = "MSG_E_007";
+    public static final String EQUIPMENT_UPDATE_INVALID = "MSG_E_008";
+    public static final String EQUIPMENT_DISPLAY_INVALID = "MSG_E_009";
 
     private BusinessMessageIds() {
     }

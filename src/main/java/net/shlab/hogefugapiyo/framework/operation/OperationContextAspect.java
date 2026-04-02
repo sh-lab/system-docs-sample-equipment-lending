@@ -1,5 +1,7 @@
-package net.shlab.hogefugapiyo.framework.core.operation;
+package net.shlab.hogefugapiyo.framework.operation;
 
+import net.shlab.hogefugapiyo.framework.core.operation.OperationContext;
+import net.shlab.hogefugapiyo.framework.core.operation.OperationContextHolder;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;

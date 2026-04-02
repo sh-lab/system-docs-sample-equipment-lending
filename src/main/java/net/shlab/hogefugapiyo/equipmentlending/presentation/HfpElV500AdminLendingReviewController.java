@@ -1,5 +1,6 @@
 package net.shlab.hogefugapiyo.equipmentlending.presentation;
 
+import jakarta.validation.Valid;
 import net.shlab.hogefugapiyo.equipmentlending.application.query.FindAdminLendingReviewQueryService;
 import net.shlab.hogefugapiyo.equipmentlending.application.BusinessException;
 import net.shlab.hogefugapiyo.equipmentlending.application.BusinessMessageIds;
@@ -8,16 +9,21 @@ import net.shlab.hogefugapiyo.equipmentlending.application.HfpElSas502ApproveLen
 import net.shlab.hogefugapiyo.equipmentlending.application.HfpElSas503RejectLendingRequestApplicationService;
 import net.shlab.hogefugapiyo.equipmentlending.application.HfpElSas504ReturnConfirmApplicationService;
 import net.shlab.hogefugapiyo.equipmentlending.application.query.AdminLendingReviewMode;
+import net.shlab.hogefugapiyo.equipmentlending.presentation.form.AdminLendingApproveForm;
+import net.shlab.hogefugapiyo.equipmentlending.presentation.form.AdminLendingRejectForm;
+import net.shlab.hogefugapiyo.equipmentlending.presentation.form.AdminReturnConfirmForm;
 import net.shlab.hogefugapiyo.equipmentlending.presentation.route.RoutePaths;
 import net.shlab.hogefugapiyo.equipmentlending.presentation.views.Views;
-import net.shlab.hogefugapiyo.framework.core.controller.AbstractBaseController;
+import net.shlab.hogefugapiyo.equipmentlending.presentation.controller.AbstractBaseController;
 import net.shlab.hogefugapiyo.framework.i18n.I18nMessageResolver;
-import net.shlab.hogefugapiyo.framework.security.UserPrincipal;
+import net.shlab.hogefugapiyo.equipmentlending.infrastructure.security.UserPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -39,7 +45,6 @@ public class HfpElV500AdminLendingReviewController extends AbstractBaseControlle
     private final HfpElSas502ApproveLendingRequestApplicationService approveApplicationService;
     private final HfpElSas503RejectLendingRequestApplicationService rejectApplicationService;
     private final HfpElSas504ReturnConfirmApplicationService returnConfirmApplicationService;
-    private final I18nMessageResolver i18nMessageResolver;
 
     public HfpElV500AdminLendingReviewController(
             HfpElSas501AdminLendingReviewInitApplicationService initializeApplicationService,
@@ -48,11 +53,11 @@ public class HfpElV500AdminLendingReviewController extends AbstractBaseControlle
             HfpElSas504ReturnConfirmApplicationService returnConfirmApplicationService,
             I18nMessageResolver i18nMessageResolver
     ) {
+        super(i18nMessageResolver);
         this.initializeApplicationService = initializeApplicationService;
         this.approveApplicationService = approveApplicationService;
         this.rejectApplicationService = rejectApplicationService;
         this.returnConfirmApplicationService = returnConfirmApplicationService;
-        this.i18nMessageResolver = i18nMessageResolver;
     }
 
     @GetMapping(RoutePaths.HFP_ELV500_ADMIN_LENDING_REVIEW)
@@ -76,15 +81,20 @@ public class HfpElV500AdminLendingReviewController extends AbstractBaseControlle
     public String approve(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             Model model,
-            @RequestParam("requestId") long requestId,
-            @RequestParam("version") int version,
-            @RequestParam(value = "reviewComment", required = false) String reviewComment
+            @Valid @ModelAttribute("approveForm") AdminLendingApproveForm form,
+            BindingResult bindingResult
     ) {
+        if (bindingResult.hasErrors()) {
+            if (form.getRequestId() == null) {
+                return redirectWithError(RoutePaths.HFP_ELV200_ADMIN_MYPAGE, BusinessMessageIds.REQUEST_DISPLAY_INVALID);
+            }
+            return renderValidationError(model, userPrincipal.userId(), form.getRequestId(), form.getReviewComment(), null, bindingResult);
+        }
         try {
-            approveApplicationService.approve(userPrincipal.userId(), requestId, reviewComment, version);
+            approveApplicationService.approve(userPrincipal.userId(), form.getRequestId(), form.getReviewComment(), form.getVersion());
             return redirectWithMessage(RoutePaths.HFP_ELV200_ADMIN_MYPAGE, BusinessMessageIds.APPROVE_REQUEST_COMPLETED);
         } catch (BusinessException ex) {
-            return renderRequestError(model, userPrincipal.userId(), requestId, ex.messageId(), reviewComment, null);
+            return renderRequestError(model, userPrincipal.userId(), form.getRequestId(), ex.messageId(), form.getReviewComment(), null);
         }
     }
 
@@ -92,15 +102,20 @@ public class HfpElV500AdminLendingReviewController extends AbstractBaseControlle
     public String reject(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             Model model,
-            @RequestParam("requestId") long requestId,
-            @RequestParam("version") int version,
-            @RequestParam(value = "reviewComment", required = false) String reviewComment
+            @Valid @ModelAttribute("rejectForm") AdminLendingRejectForm form,
+            BindingResult bindingResult
     ) {
+        if (bindingResult.hasErrors()) {
+            if (form.getRequestId() == null) {
+                return redirectWithError(RoutePaths.HFP_ELV200_ADMIN_MYPAGE, BusinessMessageIds.REQUEST_DISPLAY_INVALID);
+            }
+            return renderValidationError(model, userPrincipal.userId(), form.getRequestId(), form.getReviewComment(), null, bindingResult);
+        }
         try {
-            rejectApplicationService.reject(userPrincipal.userId(), requestId, reviewComment, version);
+            rejectApplicationService.reject(userPrincipal.userId(), form.getRequestId(), form.getReviewComment(), form.getVersion());
             return redirectWithMessage(RoutePaths.HFP_ELV200_ADMIN_MYPAGE, BusinessMessageIds.REJECT_REQUEST_COMPLETED);
         } catch (BusinessException ex) {
-            return renderRequestError(model, userPrincipal.userId(), requestId, ex.messageId(), reviewComment, null);
+            return renderRequestError(model, userPrincipal.userId(), form.getRequestId(), ex.messageId(), form.getReviewComment(), null);
         }
     }
 
@@ -108,15 +123,25 @@ public class HfpElV500AdminLendingReviewController extends AbstractBaseControlle
     public String returnConfirm(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             Model model,
-            @RequestParam("requestId") long requestId,
-            @RequestParam("version") int version,
-            @RequestParam(value = "returnConfirmComment", required = false) String returnConfirmComment
+            @Valid @ModelAttribute("returnConfirmForm") AdminReturnConfirmForm form,
+            BindingResult bindingResult
     ) {
+        if (bindingResult.hasErrors()) {
+            if (form.getRequestId() == null) {
+                return redirectWithError(RoutePaths.HFP_ELV200_ADMIN_MYPAGE, BusinessMessageIds.REQUEST_DISPLAY_INVALID);
+            }
+            return renderValidationError(model, userPrincipal.userId(), form.getRequestId(), null, form.getReturnConfirmComment(), bindingResult);
+        }
         try {
-            returnConfirmApplicationService.confirm(userPrincipal.userId(), requestId, returnConfirmComment, version);
+            returnConfirmApplicationService.confirm(
+                    userPrincipal.userId(),
+                    form.getRequestId(),
+                    form.getReturnConfirmComment(),
+                    form.getVersion()
+            );
             return redirectWithMessage(RoutePaths.HFP_ELV200_ADMIN_MYPAGE, BusinessMessageIds.RETURN_CONFIRM_COMPLETED);
         } catch (BusinessException ex) {
-            return renderRequestError(model, userPrincipal.userId(), requestId, ex.messageId(), null, returnConfirmComment);
+            return renderRequestError(model, userPrincipal.userId(), form.getRequestId(), ex.messageId(), null, form.getReturnConfirmComment());
         }
     }
 
@@ -131,6 +156,24 @@ public class HfpElV500AdminLendingReviewController extends AbstractBaseControlle
         try {
             FindAdminLendingReviewQueryService.Response viewData = initializeApplicationService.initialize(adminUserId, requestId);
             populateModel(model, viewData, null, resolveMessage(errorMessageId), reviewComment, returnConfirmComment);
+            return Views.HFP_ELV500_ADMIN_LENDING_REVIEW;
+        } catch (BusinessException ex) {
+            return redirectWithError(RoutePaths.HFP_ELV200_ADMIN_MYPAGE, ex.messageId());
+        }
+    }
+
+    private String renderValidationError(
+            Model model,
+            String adminUserId,
+            long requestId,
+            String reviewComment,
+            String returnConfirmComment,
+            BindingResult bindingResult
+    ) {
+        try {
+            FindAdminLendingReviewQueryService.Response viewData = initializeApplicationService.initialize(adminUserId, requestId);
+            populateModel(model, viewData, null, null, reviewComment, returnConfirmComment);
+            ValidationErrorSupport.populate(model, bindingResult);
             return Views.HFP_ELV500_ADMIN_LENDING_REVIEW;
         } catch (BusinessException ex) {
             return redirectWithError(RoutePaths.HFP_ELV200_ADMIN_MYPAGE, ex.messageId());
@@ -166,17 +209,5 @@ public class HfpElV500AdminLendingReviewController extends AbstractBaseControlle
             return "";
         }
         return review ? viewData.selectedRequest().reviewComment() : viewData.selectedRequest().returnConfirmComment();
-    }
-
-    private String resolveMessage(String messageId) {
-        return messageId == null || messageId.isBlank() ? null : i18nMessageResolver.getBusinessMessage(messageId);
-    }
-
-    private String redirectWithMessage(String routePath, String messageId) {
-        return "redirect:" + routePath + "?messageId=" + messageId;
-    }
-
-    private String redirectWithError(String routePath, String messageId) {
-        return "redirect:" + routePath + "?errorMessageId=" + messageId;
     }
 }

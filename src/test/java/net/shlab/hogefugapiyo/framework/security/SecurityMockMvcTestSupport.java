@@ -2,6 +2,7 @@ package net.shlab.hogefugapiyo.framework.security;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 
+import net.shlab.hogefugapiyo.equipmentlending.infrastructure.security.UserPrincipal;
 import net.shlab.hogefugapiyo.equipmentlending.model.value.UserRole;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;

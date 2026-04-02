@@ -17,7 +17,21 @@ import net.shlab.hogefugapiyo.framework.core.repository.EntityRepository;
  */
 public interface EquipmentRepository extends EntityRepository<Equipment, Long> {
 
+    long nextId();
+
     List<Equipment> findByIds(List<Long> equipmentIds);
 
     List<Equipment> saveAll(List<Equipment> equipments);
+
+    List<EquipmentSummary> findSummaryByIds(List<Long> equipmentIds);
+
+    record EquipmentSummary(
+            long equipmentId,
+            String equipmentCode,
+            String equipmentName,
+            String equipmentType,
+            String equipmentTypeName,
+            String storageLocation,
+            String statusCode
+    ) {}
 }

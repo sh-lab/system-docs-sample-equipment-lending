@@ -6,6 +6,7 @@ import net.shlab.hogefugapiyo.equipmentlending.application.BusinessException;
 import net.shlab.hogefugapiyo.equipmentlending.application.BusinessMessageIds;
 import net.shlab.hogefugapiyo.equipmentlending.application.command.RegisterLendingRequestCommandService;
 import net.shlab.hogefugapiyo.equipmentlending.application.pure.CheckLendingRequestAvailabilityService;
+import net.shlab.hogefugapiyo.equipmentlending.application.pure.EquipmentAvailabilityInput;
 import net.shlab.hogefugapiyo.equipmentlending.infrastructure.repository.entity.EquipmentRepository;
 import net.shlab.hogefugapiyo.equipmentlending.infrastructure.repository.history.HistoryRepository;
 import net.shlab.hogefugapiyo.equipmentlending.infrastructure.repository.entity.LendingRequestRepository;
@@ -65,7 +66,10 @@ public class RegisterLendingRequestCommandServiceImpl
             throw new BusinessException(BusinessMessageIds.EQUIPMENT_SELECTION_INVALID);
         }
         validateEquipments(equipments);
-        var availability = checkLendingRequestAvailabilityService.check(equipments);
+        var availability = checkLendingRequestAvailabilityService.check(
+                equipments.stream()
+                        .map(e -> new EquipmentAvailabilityInput(e.equipmentId(), e.statusCode()))
+                        .toList());
         if (!availability.valid()) {
             throw new BusinessException(BusinessMessageIds.EQUIPMENT_SELECTION_INVALID);
         }

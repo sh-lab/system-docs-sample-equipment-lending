@@ -2,6 +2,7 @@ package net.shlab.hogefugapiyo.equipmentlending.infrastructure.repository.entity
 
 import java.util.List;
 import java.util.Optional;
+import net.shlab.hogefugapiyo.equipmentlending.application.SystemException;
 import net.shlab.hogefugapiyo.equipmentlending.infrastructure.repository.entity.EquipmentRepository;
 import net.shlab.hogefugapiyo.equipmentlending.infrastructure.repository.entity.jpa.EquipmentSpringDataJpaRepository;
 import net.shlab.hogefugapiyo.equipmentlending.model.entity.Equipment;
@@ -27,6 +28,15 @@ public class JpaEquipmentRepositoryAdapter implements EquipmentRepository {
     }
 
     @Override
+    public long nextId() {
+        Long nextId = equipmentSpringDataJpaRepository.nextId();
+        if (nextId == null) {
+            throw new SystemException("Failed to allocate equipment id.");
+        }
+        return nextId;
+    }
+
+    @Override
     public List<Equipment> findByIds(List<Long> equipmentIds) {
         if (equipmentIds == null || equipmentIds.isEmpty()) {
             return List.of();
@@ -45,5 +55,23 @@ public class JpaEquipmentRepositoryAdapter implements EquipmentRepository {
             return List.of();
         }
         return equipmentSpringDataJpaRepository.saveAll(equipments);
+    }
+
+    @Override
+    public List<EquipmentSummary> findSummaryByIds(List<Long> equipmentIds) {
+        if (equipmentIds == null || equipmentIds.isEmpty()) {
+            return List.of();
+        }
+        return equipmentSpringDataJpaRepository.findSummaryByEquipmentIdIn(equipmentIds).stream()
+                .map(p -> new EquipmentSummary(
+                        p.getEquipmentId(),
+                        p.getEquipmentCode(),
+                        p.getEquipmentName(),
+                        p.getEquipmentType(),
+                        p.getEquipmentTypeName(),
+                        p.getStorageLocation(),
+                        p.getStatusCode()
+                ))
+                .toList();
     }
 }

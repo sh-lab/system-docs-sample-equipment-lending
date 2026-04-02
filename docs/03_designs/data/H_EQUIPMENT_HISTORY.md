@@ -91,7 +91,7 @@
 - 履歴は `operationId` と備品主キーの組合せで一意に管理する。
 - 同一業務操作で複数備品を更新する場合は、同一 `operationId` で対象件数分の行を追加する。
 - 同一業務操作内で同一備品を複数回更新した場合でも、履歴登録は変更確定後の備品単位で 1 行とする。
-- `COMMAND_SERVICE_ID` には `HFP-EL-SCS001_register-lending-request_service`、`HFP-EL-SCS011_reject-lending-request_service`、`HFP-EL-SCS012_return-confirm_service` のいずれかの設計IDを保持する。
+- `COMMAND_SERVICE_ID` には `HFP-EL-SCS001_register-lending-request_service`、`HFP-EL-SCS010_approve-lending-request_service`、`HFP-EL-SCS011_reject-lending-request_service`、`HFP-EL-SCS012_return-confirm_service`、`HFP-EL-SCS013_register-equipment_service`、`HFP-EL-SCS014_update-equipment-info_service` のいずれかの設計IDを保持する。
 - 本テーブルは状態コードそのものの履歴スナップショットを保持せず、どのコマンドサービスがどの備品をいつ更新したかを追跡するために用いる。
 
 ---

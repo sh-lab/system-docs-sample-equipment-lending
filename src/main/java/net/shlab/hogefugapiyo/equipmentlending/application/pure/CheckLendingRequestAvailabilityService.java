@@ -2,7 +2,6 @@ package net.shlab.hogefugapiyo.equipmentlending.application.pure;
 
 import java.util.List;
 import net.shlab.hogefugapiyo.equipmentlending.application.command.LendingRequestAvailabilityResult;
-import net.shlab.hogefugapiyo.equipmentlending.model.entity.Equipment;
 import net.shlab.hogefugapiyo.framework.core.service.PureService;
 
 /**
@@ -15,5 +14,5 @@ import net.shlab.hogefugapiyo.framework.core.service.PureService;
  */
 public interface CheckLendingRequestAvailabilityService extends PureService {
 
-    LendingRequestAvailabilityResult check(List<Equipment> equipments);
+    LendingRequestAvailabilityResult check(List<EquipmentAvailabilityInput> equipments);
 }

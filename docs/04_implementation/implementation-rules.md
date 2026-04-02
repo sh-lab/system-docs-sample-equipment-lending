@@ -85,6 +85,11 @@ net.shlab.hogefugapiyo.equipmentlending
 
 - Controller は UI / HTTP 層の責務のみを持つ。
 - 入力値の受け取り、形式検証、画面遷移、表示用データの受け渡しに限定する。
+- 基本バリデーション（必須、型、文字数、形式）は `Spring Boot Validation` を用いて実装する。
+- 入力受付がある `POST` は `@ModelAttribute` と `@Valid`、`BindingResult` を基本形とし、バリデーションエラー時は業務ロジックを呼び出さない。
+- 単項目バリデーションメッセージはメッセージプロパティに定義し、画面上で再表示する。
+- バリデーションエラー時は、画面上部に該当エラーを全件表示する。
+- 単項目バリデーションメッセージは、対象入力項目の右または下に表示する。
 - 業務判断、状態変更、永続化を行ってはならない。
 - 全ての Controller は `net.shlab.hogefugapiyo.framework.core.controller.AbstractBaseController` を継承する。
 - `@GetMapping` および `@PostMapping` の経路は `net.shlab.hogefugapiyo.equipmentlending.presentation.route.RoutePaths` の定数を参照する。
@@ -347,6 +352,7 @@ net.shlab.hogefugapiyo.equipmentlending
 - 単項目バリデーションメッセージは ID を付与せず、対象入力項目の側に表示する。
 - 単項目バリデーション以外の管理対象メッセージは、メッセージ定義から解決して利用する。
 - ログイン失敗メッセージ等の基盤画面メッセージは管理対象外とし、ID を付与しない。
+- 単項目バリデーションメッセージも、ソースコードへ直書きせずメッセージプロパティから解決する。
 
 ### 10.4 UI スタイル
 

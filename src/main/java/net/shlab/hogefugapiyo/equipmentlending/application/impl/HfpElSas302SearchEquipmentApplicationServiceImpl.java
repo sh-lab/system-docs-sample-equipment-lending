@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class HfpElSas302SearchEquipmentApplicationServiceImpl implements HfpElSas302SearchEquipmentApplicationService {
 
     private static final String DEFAULT_LENDING_STATUS = "AVAILABLE";
-    private static final String UNAVAILABLE_LENDING_STATUS = "UNAVAILABLE";
+    private static final String NOT_AVAILABLE_LENDING_STATUS = "NOT_AVAILABLE";
 
     private final SearchEquipmentQueryService searchEquipmentQueryService;
 
@@ -39,7 +39,7 @@ public class HfpElSas302SearchEquipmentApplicationServiceImpl implements HfpElSa
     private String normalizeStatus(String lendingStatus) {
         String normalized = normalize(lendingStatus);
         if ("ALL".equals(normalized)
-                || UNAVAILABLE_LENDING_STATUS.equals(normalized)
+                || NOT_AVAILABLE_LENDING_STATUS.equals(normalized)
                 || DEFAULT_LENDING_STATUS.equals(normalized)) {
             return normalized;
         }

@@ -13,6 +13,7 @@ import net.shlab.hogefugapiyo.equipmentlending.application.BusinessException;
 import net.shlab.hogefugapiyo.equipmentlending.application.command.LendingRequestAvailabilityResult;
 import net.shlab.hogefugapiyo.equipmentlending.application.command.RegisterLendingRequestCommandService;
 import net.shlab.hogefugapiyo.equipmentlending.application.pure.CheckLendingRequestAvailabilityService;
+import net.shlab.hogefugapiyo.equipmentlending.application.pure.EquipmentAvailabilityInput;
 import net.shlab.hogefugapiyo.equipmentlending.infrastructure.repository.entity.EquipmentRepository;
 import net.shlab.hogefugapiyo.equipmentlending.infrastructure.repository.entity.LendingRequestRepository;
 import net.shlab.hogefugapiyo.equipmentlending.infrastructure.repository.history.HistoryRepository;
@@ -73,8 +74,10 @@ class RegisterLendingRequestCommandServiceImplTest {
         var equipment1 = equipment(1001L, EquipmentStatus.AVAILABLE);
         var equipment2 = equipment(1004L, EquipmentStatus.AVAILABLE);
         when(equipmentRepository.findByIds(request.equipmentIds())).thenReturn(List.of(equipment1, equipment2));
-        when(checkLendingRequestAvailabilityService.check(List.of(equipment1, equipment2)))
-                .thenReturn(new LendingRequestAvailabilityResult(true, List.of(), List.of()));
+        when(checkLendingRequestAvailabilityService.check(List.of(
+                new EquipmentAvailabilityInput(1001L, "AVAILABLE"),
+                new EquipmentAvailabilityInput(1004L, "AVAILABLE")
+        ))).thenReturn(new LendingRequestAvailabilityResult(true, List.of(), List.of()));
         when(lendingRequestRepository.nextId()).thenReturn(3001L);
         when(currentTimeProvider.currentDateTime()).thenReturn(now);
 
@@ -108,8 +111,9 @@ class RegisterLendingRequestCommandServiceImplTest {
         var request = new RegisterLendingRequestCommandService.Request("USER01", List.of(1001L), null);
         var equipment = equipment(1001L, EquipmentStatus.PENDING_LENDING);
         when(equipmentRepository.findByIds(request.equipmentIds())).thenReturn(List.of(equipment));
-        when(checkLendingRequestAvailabilityService.check(List.of(equipment)))
-                .thenReturn(new LendingRequestAvailabilityResult(false, List.of(1001L), List.of("PENDING_LENDING")));
+        when(checkLendingRequestAvailabilityService.check(List.of(
+                new EquipmentAvailabilityInput(1001L, "PENDING_LENDING")
+        ))).thenReturn(new LendingRequestAvailabilityResult(false, List.of(1001L), List.of("PENDING_LENDING")));
 
         assertThatThrownBy(() -> service.execute(request))
                 .isInstanceOf(BusinessException.class)

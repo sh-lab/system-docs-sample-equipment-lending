@@ -10,10 +10,10 @@
 - 初期表示時の検索条件既定化を UI から分離する。
 
 ## 3. 目的・スコープ
-- 目的：備品検索画面の初期表示で、貸出申請可能な備品一覧と種別候補を返却する。
+- 目的：備品検索画面の初期表示で、貸出申請可能な備品一覧と備品種別マスタ候補を返却する。
 - スコープ：
   - 対象画面：`備品検索画面(V300)`
-  - 対象データ：貸出可能備品一覧、備品種別候補
+  - 対象データ：貸出可能備品一覧、備品種別マスタ候補
   - 業務範囲：初期表示用参照
 
 ## 4. 前提条件・事後条件
@@ -54,7 +54,7 @@
 | 項目 | 型 | 必須 | 説明 |
 |-----|----|-----|-----|
 | equipmentItems | `List<SearchEquipmentQueryServiceImpl.EquipmentItem>` | ○ | 一覧表示用備品 |
-| equipmentTypeOptions | `List<SearchEquipmentQueryServiceImpl.Option>` | ○ | 備品種別候補 |
+| equipmentTypeOptions | `List<SearchEquipmentQueryServiceImpl.Option>` | ○ | 備品種別マスタから取得した候補 |
 | hasMoreThanLimit | boolean | ○ | 件数上限超過有無 |
 
 ## 8. 例外マッピング方針

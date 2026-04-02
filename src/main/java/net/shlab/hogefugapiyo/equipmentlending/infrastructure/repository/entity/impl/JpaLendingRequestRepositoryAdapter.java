@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
+import net.shlab.hogefugapiyo.equipmentlending.application.SystemException;
 import net.shlab.hogefugapiyo.equipmentlending.infrastructure.repository.entity.LendingRequestRepository;
 import net.shlab.hogefugapiyo.equipmentlending.infrastructure.repository.entity.jpa.LendingRequestSpringDataJpaRepository;
 import net.shlab.hogefugapiyo.equipmentlending.model.entity.LendingRequest;
@@ -28,7 +29,7 @@ public class JpaLendingRequestRepositoryAdapter implements LendingRequestReposit
     public long nextId() {
         Long nextId = lendingRequestSpringDataJpaRepository.nextId();
         if (nextId == null) {
-            throw new IllegalStateException("Failed to allocate lending request id from sequence.");
+            throw new SystemException("Failed to allocate lending request id from sequence.");
         }
         return nextId;
     }
@@ -36,7 +37,7 @@ public class JpaLendingRequestRepositoryAdapter implements LendingRequestReposit
     @Override
     public void saveDetails(long lendingRequestId, List<Long> equipmentIds, String createdBy, LocalDateTime createdAt) {
         LendingRequest request = lendingRequestSpringDataJpaRepository.findById(lendingRequestId)
-                .orElseThrow(() -> new IllegalStateException("Failed to find lending request: " + lendingRequestId));
+                .orElseThrow(() -> new SystemException("Failed to find lending request: " + lendingRequestId));
         var auditAt = createdAt.toInstant(ZoneOffset.UTC);
         request.replaceDetails(
                 equipmentIds.stream()

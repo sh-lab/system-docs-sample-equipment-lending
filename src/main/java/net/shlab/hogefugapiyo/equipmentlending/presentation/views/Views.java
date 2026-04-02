@@ -11,6 +11,8 @@ public final class Views {
     public static final String HFP_ELV300_EQUIPMENT_SEARCH = "hfp-elv300-equipment-search";
     public static final String HFP_ELV400_USER_LENDING_REQUEST = "hfp-elv400-user-lending-request";
     public static final String HFP_ELV500_ADMIN_LENDING_REVIEW = "hfp-elv500-admin-lending-review";
+    public static final String HFP_ELV600_ADMIN_EQUIPMENT_SEARCH = "hfp-elv600-admin-equipment-search";
+    public static final String HFP_ELV700_ADMIN_EQUIPMENT_EDIT = "hfp-elv700-admin-equipment-edit";
 
     private Views() {
     }

@@ -18,6 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static net.shlab.hogefugapiyo.framework.security.SecurityMockMvcTestSupport.userPrincipal;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -56,6 +57,7 @@ class EquipmentLendingApplicationIntegrationTests {
     @Test
     void seedDataIsLoadedOnStartup() {
         assertThat(countRows("M_USER")).isEqualTo(6);
+        assertThat(countRows("M_EQUIPMENT_TYPE")).isEqualTo(3);
         assertThat(countRows("M_EQUIPMENT")).isEqualTo(22);
         assertThat(countRows("T_LENDING_REQUEST")).isEqualTo(15);
         assertThat(countRows("T_LENDING_REQUEST_DETAIL")).isEqualTo(24);
@@ -263,6 +265,113 @@ class EquipmentLendingApplicationIntegrationTests {
         );
     }
 
+    @Test
+    @Transactional
+    void adminCanRegisterEquipmentFromV700() throws Exception {
+        mockMvc.perform(post(RoutePaths.HFP_ELV700_ADMIN_EQUIPMENT_EDIT_REGISTER)
+                        .with(csrf())
+                        .param("equipmentName", "追加ライト")
+                        .param("equipmentType", "PROJECTOR")
+                        .param("storageLocation", "第3倉庫")
+                        .param("statusCode", "UNAVAILABLE")
+                        .param("remarks", "予備機")
+                        .with(userPrincipal("ADMIN1", UserRole.ADMIN)))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl(RoutePaths.HFP_ELV600_ADMIN_EQUIPMENT_SEARCH + "?messageId=MSG_I_008"));
+
+        flushPersistenceContext();
+        long equipmentId = latestEquipmentId();
+        assertThat(equipmentStatus(equipmentId)).isEqualTo("UNAVAILABLE");
+        assertThat(systemRegisteredDate(equipmentId)).isEqualTo(currentTimeProvider.currentDateTime().toLocalDate().toString());
+        assertThat(equipmentType(equipmentId)).isEqualTo("PROJECTOR");
+        assertThat(countEquipmentHistoryByEquipmentId(equipmentId)).isEqualTo(1);
+        assertThat(singleDistinctValue("H_EQUIPMENT_HISTORY", "COMMAND_SERVICE_ID")).contains("register-equipment_service");
+    }
+
+    @Test
+    @Transactional
+    void adminCanUpdateEquipmentInfoFromV700() throws Exception {
+        mockMvc.perform(post(RoutePaths.HFP_ELV700_ADMIN_EQUIPMENT_EDIT_UPDATE)
+                        .with(csrf())
+                        .param("equipmentId", "1009")
+                        .param("equipmentName", "更新後のプロジェクター")
+                        .param("statusCode", "UNAVAILABLE")
+                        .param("remarks", "棚卸し対象")
+                        .param("version", "0")
+                        .with(userPrincipal("ADMIN1", UserRole.ADMIN)))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl(RoutePaths.HFP_ELV600_ADMIN_EQUIPMENT_SEARCH + "?messageId=MSG_I_009"));
+
+        flushPersistenceContext();
+        assertThat(equipmentName(1009L)).isEqualTo("更新後のプロジェクター");
+        assertThat(equipmentStatus(1009L)).isEqualTo("UNAVAILABLE");
+        assertThat(equipmentRemarks(1009L)).isEqualTo("棚卸し対象");
+        assertThat(equipmentVersion(1009L)).isEqualTo(1);
+        assertThat(countEquipmentHistoryByEquipmentId(1009L)).isEqualTo(1);
+        assertThat(singleDistinctValue("H_EQUIPMENT_HISTORY", "COMMAND_SERVICE_ID")).contains("update-equipment-info_service");
+    }
+
+    @Test
+    @Transactional
+    void adminCannotUpdatePendingEquipmentFromV700() throws Exception {
+        mockMvc.perform(post(RoutePaths.HFP_ELV700_ADMIN_EQUIPMENT_EDIT_UPDATE)
+                        .with(csrf())
+                        .param("equipmentId", "1001")
+                        .param("equipmentName", "更新不可の長机")
+                        .param("statusCode", "UNAVAILABLE")
+                        .param("remarks", "更新不可")
+                        .param("version", "0")
+                        .with(userPrincipal("ADMIN1", UserRole.ADMIN)))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("貸出申請中と貸出中の備品状態は更新できません")));
+    }
+
+
+    private long latestEquipmentId() {
+        Long equipmentId = jdbcTemplate.queryForObject("SELECT MAX(EQUIPMENT_ID) FROM M_EQUIPMENT", Long.class);
+        return equipmentId == null ? 0L : equipmentId;
+    }
+
+    private String systemRegisteredDate(long equipmentId) {
+        return jdbcTemplate.queryForObject(
+                "SELECT CAST(SYSTEM_REGISTERED_DATE AS VARCHAR) FROM M_EQUIPMENT WHERE EQUIPMENT_ID = ?",
+                String.class,
+                equipmentId
+        );
+    }
+
+    private String equipmentType(long equipmentId) {
+        return jdbcTemplate.queryForObject(
+                "SELECT EQUIPMENT_TYPE FROM M_EQUIPMENT WHERE EQUIPMENT_ID = ?",
+                String.class,
+                equipmentId
+        );
+    }
+
+    private String equipmentName(long equipmentId) {
+        return jdbcTemplate.queryForObject(
+                "SELECT EQUIPMENT_NAME FROM M_EQUIPMENT WHERE EQUIPMENT_ID = ?",
+                String.class,
+                equipmentId
+        );
+    }
+
+    private String equipmentRemarks(long equipmentId) {
+        return jdbcTemplate.queryForObject(
+                "SELECT REMARKS FROM M_EQUIPMENT WHERE EQUIPMENT_ID = ?",
+                String.class,
+                equipmentId
+        );
+    }
+
+    private int equipmentVersion(long equipmentId) {
+        Integer version = jdbcTemplate.queryForObject(
+                "SELECT VERSION FROM M_EQUIPMENT WHERE EQUIPMENT_ID = ?",
+                Integer.class,
+                equipmentId
+        );
+        return version == null ? -1 : version;
+    }
 
     private long latestRequestId() {
         Long requestId = jdbcTemplate.queryForObject(

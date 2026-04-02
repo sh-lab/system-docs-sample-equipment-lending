@@ -43,11 +43,10 @@ class FindAdminLendingReviewQueryServiceImplTest {
                 null,
                 null,
                 0,
-                List.of(new AdminLendingReviewQueryRepository.EquipmentRow(1001L, "EQ-0001", "長机 2台", "DESK", "第1倉庫"))
+                List.of(new AdminLendingReviewQueryRepository.EquipmentRow(1001L, "EQ-0001", "長机 2台", "DESK", "長机", "第1倉庫"))
         );
         when(adminLendingReviewQueryRepository.findRequestDetail(2001L)).thenReturn(Optional.of(detail));
         when(i18nMessageResolver.get("label.status.pending-approval")).thenReturn("承認待ち");
-        when(i18nMessageResolver.get("label.equipment-type.desk")).thenReturn("長机");
 
         var actual = service.execute(new FindAdminLendingReviewQueryServiceImpl.Request("ADMIN1", 2001L));
 

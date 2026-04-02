@@ -5,7 +5,7 @@ import net.shlab.hogefugapiyo.equipmentlending.application.BusinessException;
 import net.shlab.hogefugapiyo.equipmentlending.application.BusinessMessageIds;
 import net.shlab.hogefugapiyo.equipmentlending.application.command.LendingRequestAvailabilityResult;
 import net.shlab.hogefugapiyo.equipmentlending.application.pure.CheckLendingRequestAvailabilityService;
-import net.shlab.hogefugapiyo.equipmentlending.model.entity.Equipment;
+import net.shlab.hogefugapiyo.equipmentlending.application.pure.EquipmentAvailabilityInput;
 import net.shlab.hogefugapiyo.equipmentlending.model.value.EquipmentStatus;
 import org.springframework.stereotype.Service;
 
@@ -16,17 +16,17 @@ import org.springframework.stereotype.Service;
 public class CheckLendingRequestAvailabilityServiceImpl implements CheckLendingRequestAvailabilityService {
 
     @Override
-    public LendingRequestAvailabilityResult check(List<Equipment> equipments) {
+    public LendingRequestAvailabilityResult check(List<EquipmentAvailabilityInput> equipments) {
         if (equipments == null || equipments.isEmpty()) {
             throw new BusinessException(BusinessMessageIds.EQUIPMENT_SELECTION_INVALID);
         }
         List<Long> unavailableIds = equipments.stream()
-                .filter(e -> e.getStatus() != EquipmentStatus.AVAILABLE)
-                .map(Equipment::equipmentId)
+                .filter(e -> !EquipmentStatus.AVAILABLE.code().equals(e.statusCode()))
+                .map(EquipmentAvailabilityInput::equipmentId)
                 .toList();
         List<String> invalidStatusCodes = equipments.stream()
-                .filter(e -> e.getStatus() != EquipmentStatus.AVAILABLE)
-                .map(Equipment::statusCode)
+                .filter(e -> !EquipmentStatus.AVAILABLE.code().equals(e.statusCode()))
+                .map(EquipmentAvailabilityInput::statusCode)
                 .distinct()
                 .toList();
         return new LendingRequestAvailabilityResult(unavailableIds.isEmpty(), unavailableIds, invalidStatusCodes);

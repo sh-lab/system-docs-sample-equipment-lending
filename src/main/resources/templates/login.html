@@ -12,7 +12,12 @@
     <h2 th:text="#{login.title}">login.title</h2>
     <p th:text="#{login.description}">login.description</p>
 
-    <div th:if="${errorMessage}" th:text="${errorMessage}">errorMessage</div>
+    <div class="business-message business-message--error" th:if="${errorMessage}" th:text="${errorMessage}">errorMessage</div>
+    <div class="business-message business-message--error" th:if="${validationErrors != null and !#lists.isEmpty(validationErrors)}">
+        <ul class="business-message__list">
+            <li th:each="validationError : ${validationErrors}" th:text="${validationError}">validationError</li>
+        </ul>
+    </div>
 
     <form th:action="@{/login}" method="post">
         <input th:if="${_csrf != null}"
@@ -22,10 +27,12 @@
         <div>
             <label for="userId" th:text="#{login.user-id}">login.user-id</label>
             <input id="userId" name="userId" type="text" th:value="${userId}">
+            <p class="business-field-error" th:if="${fieldErrors != null and fieldErrors['userId'] != null}" th:text="${fieldErrors['userId']}">fieldError</p>
         </div>
         <div>
             <label for="password" th:text="#{login.password}">login.password</label>
             <input id="password" name="password" type="password">
+            <p class="business-field-error" th:if="${fieldErrors != null and fieldErrors['password'] != null}" th:text="${fieldErrors['password']}">fieldError</p>
         </div>
         <button type="submit" th:text="#{login.submit}">login.submit</button>
     </form>

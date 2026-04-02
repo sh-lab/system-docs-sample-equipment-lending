@@ -7,7 +7,6 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 import java.util.stream.IntStream;
 import net.shlab.hogefugapiyo.equipmentlending.infrastructure.repository.query.EquipmentSearchQueryRepository;
-import net.shlab.hogefugapiyo.framework.i18n.I18nMessageResolver;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -20,9 +19,6 @@ class SearchEquipmentQueryServiceImplTest {
     @Mock
     private EquipmentSearchQueryRepository equipmentSearchQueryRepository;
 
-    @Mock
-    private I18nMessageResolver i18nMessageResolver;
-
     @InjectMocks
     private SearchEquipmentQueryServiceImpl service;
 
@@ -31,15 +27,12 @@ class SearchEquipmentQueryServiceImplTest {
         var query = new SearchEquipmentQueryServiceImpl.Request("プロジェクター", "PROJECTOR", "AVAILABLE");
         var criteria = new EquipmentSearchQueryRepository.Criteria("プロジェクター", "PROJECTOR", "AVAILABLE");
         var items = List.of(
-                new EquipmentSearchQueryRepository.EquipmentRow(1L, "EQ-0001", "プロジェクターA", "PROJECTOR", "倉庫A", "AVAILABLE", true),
-                new EquipmentSearchQueryRepository.EquipmentRow(2L, "EQ-0002", "プロジェクターB", "PROJECTOR", "倉庫B", "PENDING_LENDING", false)
+                new EquipmentSearchQueryRepository.EquipmentRow(1L, "EQ-0001", "プロジェクターA", "PROJECTOR", "プロジェクター", "倉庫A", "AVAILABLE", true),
+                new EquipmentSearchQueryRepository.EquipmentRow(2L, "EQ-0002", "プロジェクターB", "PROJECTOR", "プロジェクター", "倉庫B", "PENDING_LENDING", false)
         );
-        var options = List.of(new EquipmentSearchQueryRepository.EquipmentTypeOptionRow("PROJECTOR"));
+        var options = List.of(new EquipmentSearchQueryRepository.EquipmentTypeOptionRow("PROJECTOR", "プロジェクター"));
         when(equipmentSearchQueryRepository.findEquipmentByCriteria(criteria)).thenReturn(items);
         when(equipmentSearchQueryRepository.findEquipmentTypeOptions()).thenReturn(options);
-        when(i18nMessageResolver.get("label.equipment-type.projector")).thenReturn("プロジェクター");
-        when(i18nMessageResolver.get("label.status.available")).thenReturn("貸出可能");
-        when(i18nMessageResolver.get("label.status.unavailable")).thenReturn("貸出不可");
 
         var actual = service.execute(query);
 
@@ -65,6 +58,7 @@ class SearchEquipmentQueryServiceImplTest {
                         "EQ-%04d".formatted(index),
                         "備品%d".formatted(index),
                         "PROJECTOR",
+                        "プロジェクター",
                         "倉庫",
                         "AVAILABLE",
                         true
@@ -72,8 +66,6 @@ class SearchEquipmentQueryServiceImplTest {
                 .toList();
         when(equipmentSearchQueryRepository.findEquipmentByCriteria(criteria)).thenReturn(items);
         when(equipmentSearchQueryRepository.findEquipmentTypeOptions()).thenReturn(List.of());
-        when(i18nMessageResolver.get("label.equipment-type.projector")).thenReturn("プロジェクター");
-        when(i18nMessageResolver.get("label.status.available")).thenReturn("貸出可能");
 
         var actual = service.execute(query);
 

@@ -8,7 +8,7 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
 import java.util.List;
 import net.shlab.hogefugapiyo.framework.core.operation.OperationContextHolder;
-import net.shlab.hogefugapiyo.framework.core.operation.OperationContextAspect;
+import net.shlab.hogefugapiyo.framework.operation.OperationContextAspect;
 import net.shlab.hogefugapiyo.framework.core.service.ApplicationService;
 import net.shlab.hogefugapiyo.framework.core.service.CommandService;
 import org.junit.jupiter.api.AfterEach;

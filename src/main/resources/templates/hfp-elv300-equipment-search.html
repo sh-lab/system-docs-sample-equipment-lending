@@ -16,6 +16,11 @@
     <p class="business-message business-message--error"
        th:if="${errorMessage != null}"
        th:text="${errorMessage}">errorMessage</p>
+    <div class="business-message business-message--error" th:if="${validationErrors != null and !#lists.isEmpty(validationErrors)}">
+        <ul class="business-message__list">
+            <li th:each="validationError : ${validationErrors}" th:text="${validationError}">validationError</li>
+        </ul>
+    </div>
     <p class="business-message business-message--info"
        th:if="${infoMessage != null}"
        th:text="${infoMessage}">infoMessage</p>
@@ -42,7 +47,7 @@
                 <label class="business-search-field__label" for="lendingStatus" th:text="#{screen.elv300.lending-status}">screen.elv300.lending-status</label>
                 <select class="business-search-field__control" id="lendingStatus" name="lendingStatus">
                     <option th:selected="${lendingStatus == 'AVAILABLE'}" th:text="#{screen.elv300.status-available}" value="AVAILABLE">screen.elv300.status-available</option>
-                    <option th:selected="${lendingStatus == 'UNAVAILABLE'}" th:text="#{screen.elv300.status-unavailable}" value="UNAVAILABLE">screen.elv300.status-unavailable</option>
+                    <option th:selected="${lendingStatus == 'NOT_AVAILABLE'}" th:text="#{screen.elv300.status-unavailable}" value="NOT_AVAILABLE">screen.elv300.status-unavailable</option>
                     <option th:selected="${lendingStatus == 'ALL'}" th:text="#{screen.elv300.status-all}" value="ALL">screen.elv300.status-all</option>
                 </select>
             </div>
@@ -84,6 +89,7 @@
                 </tr>
                 </tbody>
             </table>
+            <p class="business-field-error" th:if="${fieldErrors != null and fieldErrors['equipmentIds'] != null}" th:text="${fieldErrors['equipmentIds']}">fieldError</p>
             <div class="business-action-row business-action-row--right">
                 <button class="business-button" id="lendingRequestButton" th:text="#{screen.elv300.lending-request}" type="submit">screen.elv300.lending-request</button>
             </div>

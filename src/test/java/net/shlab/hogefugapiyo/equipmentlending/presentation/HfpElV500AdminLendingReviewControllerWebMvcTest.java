@@ -21,7 +21,7 @@ import net.shlab.hogefugapiyo.equipmentlending.application.query.AdminLendingRev
 import net.shlab.hogefugapiyo.equipmentlending.presentation.route.RoutePaths;
 import net.shlab.hogefugapiyo.equipmentlending.model.value.UserRole;
 import net.shlab.hogefugapiyo.framework.i18n.I18nMessageResolver;
-import net.shlab.hogefugapiyo.framework.security.config.SecurityConfiguration;
+import net.shlab.hogefugapiyo.equipmentlending.infrastructure.security.config.SecurityConfiguration;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -79,6 +79,21 @@ class HfpElV500AdminLendingReviewControllerWebMvcTest {
                         .with(userPrincipal("ADMIN1", UserRole.ADMIN)))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl(RoutePaths.HFP_ELV200_ADMIN_MYPAGE + "?messageId=MSG_I_005"));
+    }
+
+    @Test
+    void approveWithTooLongCommentRedisplaysSamePage() throws Exception {
+        given(initializeApplicationService.initialize("ADMIN1", 2001L)).willReturn(approvalViewData());
+
+        mockMvc.perform(post(RoutePaths.HFP_ELV500_ADMIN_LENDING_REVIEW_APPROVE)
+                        .with(csrf())
+                        .with(userPrincipal("ADMIN1", UserRole.ADMIN))
+                        .param("requestId", "2001")
+                        .param("version", "0")
+                        .param("reviewComment", "a".repeat(501)))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("管理者コメントは500文字以内で入力してください。")))
+                .andExpect(content().string(containsString("管理者承認・却下・返却確認画面")));
     }
 
     private FindAdminLendingReviewQueryServiceImpl.Response approvalViewData() {

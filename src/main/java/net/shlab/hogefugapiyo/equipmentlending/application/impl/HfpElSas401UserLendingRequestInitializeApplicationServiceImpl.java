@@ -8,11 +8,10 @@ import net.shlab.hogefugapiyo.equipmentlending.application.BusinessMessageIds;
 import net.shlab.hogefugapiyo.equipmentlending.application.HfpElSas401UserLendingRequestInitializeApplicationService;
 import net.shlab.hogefugapiyo.equipmentlending.application.query.FindEquipmentByIdsQueryService;
 import net.shlab.hogefugapiyo.equipmentlending.application.query.FindEquipmentByIdsQueryService.Request;
+import net.shlab.hogefugapiyo.equipmentlending.application.query.FindLendingRequestByIdQueryService;
 import net.shlab.hogefugapiyo.equipmentlending.application.query.LendingRequestScreenMode;
 import net.shlab.hogefugapiyo.equipmentlending.application.query.UserLendingRequestEquipmentDto;
 import net.shlab.hogefugapiyo.equipmentlending.application.query.UserLendingRequestViewData;
-import net.shlab.hogefugapiyo.equipmentlending.infrastructure.repository.entity.LendingRequestRepository;
-import net.shlab.hogefugapiyo.equipmentlending.model.entity.LendingRequest;
 import net.shlab.hogefugapiyo.framework.i18n.I18nMessageResolver;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,16 +28,16 @@ public class HfpElSas401UserLendingRequestInitializeApplicationServiceImpl
     private static final String FROM_EQUIPMENT_SEARCH = "V300";
 
     private final FindEquipmentByIdsQueryService findEquipmentByIdsQueryService;
-    private final LendingRequestRepository lendingRequestRepository;
+    private final FindLendingRequestByIdQueryService findLendingRequestByIdQueryService;
     private final I18nMessageResolver i18nMessageResolver;
 
     public HfpElSas401UserLendingRequestInitializeApplicationServiceImpl(
             FindEquipmentByIdsQueryService findEquipmentByIdsQueryService,
-            LendingRequestRepository lendingRequestRepository,
+            FindLendingRequestByIdQueryService findLendingRequestByIdQueryService,
             I18nMessageResolver i18nMessageResolver
     ) {
         this.findEquipmentByIdsQueryService = findEquipmentByIdsQueryService;
-        this.lendingRequestRepository = lendingRequestRepository;
+        this.findLendingRequestByIdQueryService = findLendingRequestByIdQueryService;
         this.i18nMessageResolver = i18nMessageResolver;
     }
 
@@ -50,33 +49,32 @@ public class HfpElSas401UserLendingRequestInitializeApplicationServiceImpl
         if (requestId == null) {
             throw new BusinessException(BusinessMessageIds.REQUEST_DISPLAY_INVALID);
         }
-        LendingRequest request = lendingRequestRepository.findById(requestId)
-                .orElseThrow(() -> new BusinessException(BusinessMessageIds.REQUEST_DISPLAY_INVALID));
-        if (!userId.equals(request.applicantUserId())) {
+        var lendingRequest = findLendingRequestByIdQueryService.execute(
+                new FindLendingRequestByIdQueryService.Request(requestId));
+        if (!userId.equals(lendingRequest.applicantUserId())) {
             throw new BusinessException(BusinessMessageIds.REQUEST_DISPLAY_INVALID);
         }
-        List<Long> requestEquipmentIds = lendingRequestRepository.findEquipmentIdsByLendingRequestId(requestId);
-        var equipmentResponse = findEquipmentByIdsQueryService.execute(new Request(requestEquipmentIds));
-        if (equipmentResponse.items().size() != requestEquipmentIds.size()) {
+        var equipmentResponse = findEquipmentByIdsQueryService.execute(new Request(lendingRequest.equipmentIds()));
+        if (equipmentResponse.items().size() != lendingRequest.equipmentIds().size()) {
             throw new BusinessException(BusinessMessageIds.REQUEST_DISPLAY_INVALID);
         }
-        LendingRequestScreenMode mode = resolveMode(request.statusCode());
-        boolean actionEnabled = isActionEnabled(request.statusCode());
+        LendingRequestScreenMode mode = resolveMode(lendingRequest.statusCode());
+        boolean actionEnabled = isActionEnabled(lendingRequest.statusCode());
         return new UserLendingRequestViewData(
                 mode,
                 actionEnabled,
                 false,
                 true,
-                request.lendingRequestId(),
-                toStatusLabel(request.statusCode()),
-                formatDateTime(request.requestedAt()),
-                formatDateTime(request.reviewedAt()),
-                formatDateTime(request.returnRequestedAt()),
-                defaultString(request.requestComment()),
-                defaultString(request.returnRequestComment()),
-                defaultString(request.reviewComment()),
-                request.version(),
-                requestEquipmentIds,
+                lendingRequest.lendingRequestId(),
+                toStatusLabel(lendingRequest.statusCode()),
+                formatDateTime(lendingRequest.requestedAt()),
+                formatDateTime(lendingRequest.reviewedAt()),
+                formatDateTime(lendingRequest.returnRequestedAt()),
+                defaultString(lendingRequest.requestComment()),
+                defaultString(lendingRequest.returnRequestComment()),
+                defaultString(lendingRequest.reviewComment()),
+                lendingRequest.version(),
+                lendingRequest.equipmentIds(),
                 toEquipmentItems(equipmentResponse.items())
         );
     }
@@ -123,19 +121,10 @@ public class HfpElSas401UserLendingRequestInitializeApplicationServiceImpl
                         equipment.equipmentId(),
                         equipment.equipmentCode(),
                         equipment.equipmentName(),
-                        toEquipmentTypeLabel(equipment.equipmentType()),
+                        equipment.equipmentTypeLabel(),
                         equipment.storageLocation()
                 ))
                 .toList();
-    }
-
-    private String toEquipmentTypeLabel(String equipmentTypeCode) {
-        return switch (equipmentTypeCode) {
-            case "DESK" -> i18nMessageResolver.get("label.equipment-type.desk");
-            case "PIPE_CHAIR" -> i18nMessageResolver.get("label.equipment-type.pipe-chair");
-            case "PROJECTOR" -> i18nMessageResolver.get("label.equipment-type.projector");
-            default -> equipmentTypeCode;
-        };
     }
 
     private String toStatusLabel(String statusCode) {

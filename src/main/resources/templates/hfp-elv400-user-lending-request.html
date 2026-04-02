@@ -13,6 +13,11 @@
     <p class="business-message business-message--error"
        th:if="${errorMessage != null}"
        th:text="${errorMessage}">errorMessage</p>
+    <div class="business-message business-message--error" th:if="${validationErrors != null and !#lists.isEmpty(validationErrors)}">
+        <ul class="business-message__list">
+            <li th:each="validationError : ${validationErrors}" th:text="${validationError}">validationError</li>
+        </ul>
+    </div>
     <p class="business-message business-message--info"
        th:if="${infoMessage != null}"
        th:text="${infoMessage}">infoMessage</p>
@@ -76,6 +81,7 @@
                 <input th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" type="hidden">
                 <input name="equipmentIds" th:each="equipmentId : ${viewData.equipmentIds()}" th:value="${equipmentId}" type="hidden">
                 <textarea class="business-textarea" name="requestComment" rows="5" th:text="${requestComment}"></textarea>
+                <p class="business-field-error" th:if="${fieldErrors != null and fieldErrors['requestComment'] != null}" th:text="${fieldErrors['requestComment']}">fieldError</p>
                 <div class="business-action-row business-action-row--right" th:if="${viewData.actionEnabled()}">
                     <button class="business-button" th:text="#{screen.elv400.submit-lending}" type="submit">screen.elv400.submit-lending</button>
                 </div>
@@ -91,6 +97,7 @@
             <input name="requestId" th:value="${viewData.lendingRequestId()}" type="hidden">
             <input name="version" th:value="${viewData.version()}" type="hidden">
             <textarea class="business-textarea" name="returnRequestComment" rows="5" th:readonly="${!viewData.actionEnabled()}" th:text="${returnRequestComment}"></textarea>
+            <p class="business-field-error" th:if="${fieldErrors != null and fieldErrors['returnRequestComment'] != null}" th:text="${fieldErrors['returnRequestComment']}">fieldError</p>
             <div class="business-action-row business-action-row--right" th:if="${viewData.actionEnabled()}">
                 <button class="business-button" th:text="#{screen.elv400.submit-return}" type="submit">screen.elv400.submit-return</button>
             </div>

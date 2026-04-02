@@ -40,9 +40,24 @@
 - 独自の `HttpSession` 属性は、認証・認可判定の正として扱わない。
 
 ### 4.4 本サンプルにおける認証の簡略化
-- 本サンプルでは、Spring Security の認証フレームワークによる認証処理は採用せず、学習簡便のため手動認証を採用する。
-- ただし、認証後の利用者情報の保持、認可制御、CSRF 対策については Spring Security を利用する。
-- 本番環境では、`AuthenticationProvider` 等を用いた標準的な認証方式を採用すべきである。
+
+本サンプルでは、認証処理を以下のとおり簡易化している（判断根拠は [ADR-003](../99_adr/ADR-003_spring-security-csrf-adoption.md) を参照）。
+
+- Spring Security の `AuthenticationProvider` / `UserDetailsService` による認証処理は採用せず、`LoginController` 内で手動認証を行う。
+- 全利用者に共通のパスワード（`pass`）を使用し、パスワードのハッシュ化を行わない。
+- `M_USER` テーブルにパスワードカラムを持たず、パスワード照合はアプリケーションコード内の固定値比較で行う。
+- ログイン画面に試験用利用者一覧および共通パスワードを表示する。
+- 認証後の利用者情報の保持、認可制御、CSRF 対策については Spring Security を利用する。
+
+認証関連の実装（`LoginApplicationService`、`FindLoginUserQueryService`、`LoginController`）は、業務サービスではなく認証基盤の一部として扱うため、業務サービス設計書（SAS / SQS）の作成対象外とする。
+
+**本サンプルの認証構成を本番環境で使用してはならない。**
+本番環境では、以下の対応が必要である。
+
+- `AuthenticationProvider` または `UserDetailsService` を用いた標準的な認証方式の採用
+- パスワードのハッシュ化保存（`BCryptPasswordEncoder` 等）
+- ユーザーテーブルへの認証情報カラムの追加
+- 試験用利用者一覧・共通パスワード表示の削除
 
 ---
 
@@ -56,6 +71,8 @@
 | `HFP-EL-V400_user-lending-request` | `USER` 権限を持つ認証済み利用者 | `@PreAuthorize("hasRole('USER')")` |
 | `HFP-EL-V200_admin-mypage` | `ADMIN` 権限を持つ認証済み利用者 | `@PreAuthorize("hasRole('ADMIN')")` |
 | `HFP-EL-V500_admin-lending-review` | `ADMIN` 権限を持つ認証済み利用者 | `@PreAuthorize("hasRole('ADMIN')")` |
+| `HFP-EL-V600_admin-equipment-search` | `ADMIN` 権限を持つ認証済み利用者 | `@PreAuthorize("hasRole('ADMIN')")` |
+| `HFP-EL-V700_admin-equipment-edit` | `ADMIN` 権限を持つ認証済み利用者 | `@PreAuthorize("hasRole('ADMIN')")` |
 
 ### 5.2 Controller 責務
 - Controller は画面単位の認可を宣言する。
@@ -95,4 +112,6 @@
 - `docs/03_designs/ui/HFP-EL-V300_equipment-search.md`
 - `docs/03_designs/ui/HFP-EL-V400_user-lending-request.md`
 - `docs/03_designs/ui/HFP-EL-V500_admin-lending-review.md`
+- `docs/03_designs/ui/HFP-EL-V600_admin-equipment-search.md`
+- `docs/03_designs/ui/HFP-EL-V700_admin-equipment-edit.md`
 - `docs/99_adr/ADR-003_spring-security-csrf-adoption.md`

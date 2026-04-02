@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="#{screen.elv700.title}">screen.elv700.title</title>
+    <link rel="stylesheet" th:href="@{/css/business-common.css}">
+</head>
+<body class="business-screen">
+<div th:replace="~{fragments/fragment-hfp-el-common :: hfp_el_header_with_page_title(#{screen.elv700.title})}"></div>
+<main class="business-main">
+    <p class="business-message business-message--error" th:if="${errorMessage != null}" th:text="${errorMessage}">error</p>
+    <div class="business-message business-message--error" th:if="${validationErrors != null and !#lists.isEmpty(validationErrors)}">
+        <ul class="business-message__list">
+            <li th:each="validationError : ${validationErrors}" th:text="${validationError}">validationError</li>
+        </ul>
+    </div>
+    <p class="business-message business-message--info" th:if="${infoMessage != null}" th:text="${infoMessage}">info</p>
+    <h1 class="business-page-title" th:text="#{screen.elv700.title}">title</h1>
+    <p class="business-mode-label" th:text="#{screen.elv700.mode-label} + ' : ' + (${isCreateMode} ? #{screen.elv700.mode.create} : #{screen.elv700.mode.edit})">mode</p>
+
+    <section class="business-section">
+        <h2 class="business-section__title" th:text="#{screen.elv700.basic-information}">basic</h2>
+        <form method="post" th:if="${isCreateMode}" th:action="@{/hfp-elv700-admin-equipment-edit/register}">
+            <input th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" type="hidden">
+            <dl class="business-summary-grid">
+                <div>
+                    <dt th:text="#{label.equipment-code}">code</dt>
+                    <dd th:text="#{screen.elv700.auto-numbering}">auto</dd>
+                </div>
+                <div>
+                    <dt th:text="#{screen.elv700.system-registered-date}">date</dt>
+                    <dd th:text="${viewData.displaySystemRegisteredDate()}">2026-01-01</dd>
+                </div>
+            </dl>
+            <div class="business-search-field">
+                <label class="business-search-field__label" for="equipmentName" th:text="#{screen.elv700.equipment-name}">name</label>
+                <input class="business-search-field__control" id="equipmentName" name="equipmentName" th:value="${inputEquipmentName}" maxlength="100" type="text">
+                <p class="business-field-error" th:if="${fieldErrors != null and fieldErrors['equipmentName'] != null}" th:text="${fieldErrors['equipmentName']}">fieldError</p>
+            </div>
+            <div class="business-search-field">
+                <label class="business-search-field__label" for="equipmentType" th:text="#{screen.elv700.equipment-type}">type</label>
+                <select class="business-search-field__control" id="equipmentType" name="equipmentType">
+                    <option th:each="option : ${equipmentTypeOptions}" th:value="${option.value()}" th:text="${option.label()}" th:selected="${option.value() == inputEquipmentType}">type</option>
+                </select>
+                <p class="business-field-error" th:if="${fieldErrors != null and fieldErrors['equipmentType'] != null}" th:text="${fieldErrors['equipmentType']}">fieldError</p>
+            </div>
+            <div class="business-search-field">
+                <label class="business-search-field__label" for="storageLocation" th:text="#{screen.elv700.storage-location}">location</label>
+                <input class="business-search-field__control" id="storageLocation" name="storageLocation" th:value="${inputStorageLocation}" maxlength="100" type="text">
+                <p class="business-field-error" th:if="${fieldErrors != null and fieldErrors['storageLocation'] != null}" th:text="${fieldErrors['storageLocation']}">fieldError</p>
+            </div>
+            <div class="business-search-field">
+                <label class="business-search-field__label" for="remarks" th:text="#{screen.elv700.remarks}">remarks</label>
+                <textarea class="business-textarea" id="remarks" name="remarks" maxlength="500" rows="5" th:text="${inputRemarks}"></textarea>
+                <p class="business-field-error" th:if="${fieldErrors != null and fieldErrors['remarks'] != null}" th:text="${fieldErrors['remarks']}">fieldError</p>
+            </div>
+            <section class="business-section">
+                <h2 class="business-section__title" th:text="#{screen.elv700.status-information}">status</h2>
+                <div class="business-search-field">
+                    <label class="business-search-field__label" for="statusCode" th:text="#{screen.elv700.next-status}">next</label>
+                    <select class="business-search-field__control" id="statusCode" name="statusCode">
+                        <option th:each="option : ${statusOptions}" th:value="${option.value()}" th:text="${option.label()}" th:selected="${option.value() == (inputStatusCode == null ? 'AVAILABLE' : inputStatusCode)}">status</option>
+                    </select>
+                    <p class="business-field-error" th:if="${fieldErrors != null and fieldErrors['statusCode'] != null}" th:text="${fieldErrors['statusCode']}">fieldError</p>
+                </div>
+            </section>
+            <div class="business-action-row">
+                <a class="business-button business-button--secondary" th:href="@{/hfp-elv600-admin-equipment-search}" th:text="#{screen.elv700.back-to-search}">back</a>
+                <button class="business-button" th:text="#{screen.elv700.register}" type="submit">register</button>
+            </div>
+        </form>
+
+        <div th:if="${isEditMode}">
+            <form method="post" th:action="@{/hfp-elv700-admin-equipment-edit/update}">
+                <input th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" type="hidden">
+                <input type="hidden" name="equipmentId" th:value="${viewData.equipmentDetail().equipmentId()}">
+                <input type="hidden" name="version" th:value="${viewData.equipmentDetail().version()}">
+                <dl class="business-summary-grid">
+                    <div>
+                        <dt th:text="#{label.equipment-code}">code</dt>
+                        <dd th:text="${viewData.equipmentDetail().equipmentCode()}">EQ-0001</dd>
+                    </div>
+                    <div>
+                        <dt th:text="#{screen.elv700.equipment-name}">name</dt>
+                        <dd>
+                            <input class="business-search-field__control" id="editEquipmentName" maxlength="100" name="equipmentName" type="text"
+                                   th:value="${inputEquipmentName == null ? viewData.equipmentDetail().equipmentName() : inputEquipmentName}">
+                            <p class="business-field-error" th:if="${fieldErrors != null and fieldErrors['equipmentName'] != null}" th:text="${fieldErrors['equipmentName']}">fieldError</p>
+                        </dd>
+                    </div>
+                    <div>
+                        <dt th:text="#{screen.elv700.equipment-type}">type</dt>
+                        <dd th:text="${viewData.equipmentDetail().equipmentTypeLabel()}">type</dd>
+                    </div>
+                    <div>
+                        <dt th:text="#{screen.elv700.storage-location}">location</dt>
+                        <dd th:text="${viewData.equipmentDetail().storageLocation()}">loc</dd>
+                    </div>
+                    <div>
+                        <dt th:text="#{screen.elv700.system-registered-date}">date</dt>
+                        <dd th:text="${viewData.equipmentDetail().systemRegisteredDate()}">2026-01-01</dd>
+                    </div>
+                </dl>
+                <div class="business-search-field">
+                    <label class="business-search-field__label" for="editRemarks" th:text="#{screen.elv700.remarks}">remarks</label>
+                    <textarea class="business-textarea" id="editRemarks" name="remarks" maxlength="500" rows="5" th:text="${inputRemarks == null ? viewData.equipmentDetail().remarks() : inputRemarks}"></textarea>
+                    <p class="business-field-error" th:if="${fieldErrors != null and fieldErrors['remarks'] != null}" th:text="${fieldErrors['remarks']}">fieldError</p>
+                </div>
+                <section class="business-section">
+                    <h2 class="business-section__title" th:text="#{screen.elv700.status-information}">status</h2>
+                    <div class="business-search-field">
+                        <label class="business-search-field__label" th:text="#{screen.elv700.current-status}">current</label>
+                        <div class="business-search-field__control" th:text="${viewData.equipmentDetail().currentStatusLabel()}">currentStatus</div>
+                    </div>
+                    <div class="business-search-field">
+                        <label class="business-search-field__label" for="editStatusCode" th:text="#{screen.elv700.next-status}">next</label>
+                        <select class="business-search-field__control" id="editStatusCode" name="statusCode">
+                            <option th:each="option : ${statusOptions}" th:value="${option.value()}" th:text="${option.label()}" th:selected="${option.value() == (inputStatusCode == null ? viewData.equipmentDetail().currentStatusCode() : inputStatusCode)}">status</option>
+                        </select>
+                        <p class="business-field-error" th:if="${fieldErrors != null and fieldErrors['statusCode'] != null}" th:text="${fieldErrors['statusCode']}">fieldError</p>
+                    </div>
+                </section>
+                <div class="business-action-row">
+                    <a class="business-button business-button--secondary" th:href="@{/hfp-elv600-admin-equipment-search}" th:text="#{screen.elv700.back-to-search}">back</a>
+                    <button class="business-button" th:text="#{screen.elv700.update}" type="submit">update</button>
+                </div>
+            </form>
+        </div>
+    </section>
+</main>
+<div th:replace="~{fragments/fragment-hfp-el-common :: hfp_el_footer}"></div>
+</body>
+</html>

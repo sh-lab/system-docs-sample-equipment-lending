@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="#{app.title} + ':エラー'">HFP備品貸出システム:エラー</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div th:replace="~{fragments/fragment-hfp-el-common :: hfp_el_header}"></div>
+<main class="business-main">
+    <h2>エラーが発生しました</h2>
+    <p>申し訳ありませんが、予期しないエラーが発生しました。</p>
+    <p>しばらく経ってから再度お試しください。</p>
+    <p><a th:href="@{/}">トップページへ戻る</a></p>
+</main>
+<div th:replace="~{fragments/fragment-hfp-el-common :: hfp_el_footer}"></div>
+</body>
+</html>

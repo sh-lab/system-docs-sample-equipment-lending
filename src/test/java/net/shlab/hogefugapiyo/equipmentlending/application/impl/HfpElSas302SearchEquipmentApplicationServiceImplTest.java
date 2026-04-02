@@ -50,10 +50,10 @@ class HfpElSas302SearchEquipmentApplicationServiceImplTest {
     @Test
     void searchAllowsUnavailableStatus() {
         var expected = new SearchEquipmentQueryServiceImpl.Response(List.of(), List.of(), false);
-        var query = new SearchEquipmentQueryServiceImpl.Request("", "", "UNAVAILABLE");
+        var query = new SearchEquipmentQueryServiceImpl.Request("", "", "NOT_AVAILABLE");
         when(searchEquipmentQueryService.execute(eq(query))).thenReturn(expected);
 
-        var actual = applicationService.search("", "", "UNAVAILABLE");
+        var actual = applicationService.search("", "", "NOT_AVAILABLE");
 
         assertThat(actual).isEqualTo(expected);
         verify(searchEquipmentQueryService).execute(query);

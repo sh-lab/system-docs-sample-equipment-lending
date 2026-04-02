@@ -18,7 +18,8 @@ public interface FindEquipmentByIdsQueryService
     }
 
     record EquipmentItem(long equipmentId, String equipmentCode, String equipmentName,
-                         String equipmentType, String storageLocation) {
+                         String equipmentType, String equipmentTypeLabel, String storageLocation,
+                         String statusCode) {
     }
 
     record Response(List<EquipmentItem> items) {

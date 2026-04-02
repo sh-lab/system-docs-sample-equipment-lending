@@ -3,7 +3,6 @@ package net.shlab.hogefugapiyo.equipmentlending.application.query.impl;
 import java.util.List;
 import net.shlab.hogefugapiyo.equipmentlending.application.query.SearchEquipmentQueryService;
 import net.shlab.hogefugapiyo.equipmentlending.infrastructure.repository.query.EquipmentSearchQueryRepository;
-import net.shlab.hogefugapiyo.framework.i18n.I18nMessageResolver;
 import org.springframework.stereotype.Service;
 
 /**
@@ -15,14 +14,10 @@ public class SearchEquipmentQueryServiceImpl implements SearchEquipmentQueryServ
     private static final int DISPLAY_LIMIT = 100;
 
     private final EquipmentSearchQueryRepository equipmentSearchQueryRepository;
-    private final I18nMessageResolver i18nMessageResolver;
-
     public SearchEquipmentQueryServiceImpl(
-            EquipmentSearchQueryRepository equipmentSearchQueryRepository,
-            I18nMessageResolver i18nMessageResolver
+            EquipmentSearchQueryRepository equipmentSearchQueryRepository
     ) {
         this.equipmentSearchQueryRepository = equipmentSearchQueryRepository;
-        this.i18nMessageResolver = i18nMessageResolver;
     }
 
     @Override
@@ -52,7 +47,7 @@ public class SearchEquipmentQueryServiceImpl implements SearchEquipmentQueryServ
                 equipmentRow.equipmentId(),
                 equipmentRow.equipmentCode(),
                 equipmentRow.equipmentName(),
-                toEquipmentTypeLabel(equipmentRow.equipmentTypeCode()),
+                equipmentRow.equipmentTypeName(),
                 equipmentRow.storageLocation(),
                 toStatusLabel(equipmentRow.statusCode()),
                 equipmentRow.selectable()
@@ -62,24 +57,14 @@ public class SearchEquipmentQueryServiceImpl implements SearchEquipmentQueryServ
     private SearchEquipmentQueryService.Option toOption(EquipmentSearchQueryRepository.EquipmentTypeOptionRow optionRow) {
         return new SearchEquipmentQueryService.Option(
                 optionRow.equipmentTypeCode(),
-                toEquipmentTypeLabel(optionRow.equipmentTypeCode())
+                optionRow.equipmentTypeName()
         );
-    }
-
-    private String toEquipmentTypeLabel(String equipmentTypeCode) {
-        return switch (equipmentTypeCode) {
-            case "DESK" -> i18nMessageResolver.get("label.equipment-type.desk");
-            case "PIPE_CHAIR" -> i18nMessageResolver.get("label.equipment-type.pipe-chair");
-            case "PROJECTOR" -> i18nMessageResolver.get("label.equipment-type.projector");
-            default -> equipmentTypeCode;
-        };
     }
 
     private String toStatusLabel(String statusCode) {
         return switch (statusCode) {
-            case "AVAILABLE" -> i18nMessageResolver.get("label.status.available");
-            case "PENDING_LENDING", "LENT", "UNAVAILABLE", "DISPOSED" ->
-                    i18nMessageResolver.get("label.status.unavailable");
+            case "AVAILABLE" -> "貸出可能";
+            case "PENDING_LENDING", "LENT", "UNAVAILABLE", "DISPOSED" -> "貸出不可";
             default -> statusCode;
         };
     }

@@ -6,6 +6,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.time.LocalDate;
 import net.shlab.hogefugapiyo.equipmentlending.model.value.EquipmentStatus;
 import net.shlab.hogefugapiyo.framework.persistence.entity.AuditVersionEntity;
 
@@ -37,6 +38,9 @@ public class Equipment extends AuditVersionEntity {
 
     @Column(name = "STORAGE_LOCATION", nullable = false)
     private String storageLocation;
+
+    @Column(name = "SYSTEM_REGISTERED_DATE", nullable = false)
+    private LocalDate systemRegisteredDate;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "STATUS_CODE", nullable = false)
@@ -96,6 +100,14 @@ public class Equipment extends AuditVersionEntity {
         this.status = status;
     }
 
+    public LocalDate getSystemRegisteredDate() {
+        return systemRegisteredDate;
+    }
+
+    public void setSystemRegisteredDate(LocalDate systemRegisteredDate) {
+        this.systemRegisteredDate = systemRegisteredDate;
+    }
+
     public String getRemarks() {
         return remarks;
     }
@@ -122,6 +134,10 @@ public class Equipment extends AuditVersionEntity {
 
     public String storageLocation() {
         return storageLocation;
+    }
+
+    public LocalDate systemRegisteredDate() {
+        return systemRegisteredDate;
     }
 
     public String statusCode() {

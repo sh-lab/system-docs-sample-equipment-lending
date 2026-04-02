@@ -50,6 +50,7 @@
 **Don’t**
 - 詳細な業務ルール実装
 - データ整合性チェックの実装
+- **Repository の直接呼び出し**
 
 ---
 
@@ -57,7 +58,7 @@
 **Do**
 - 登録・更新・削除（副作用の集中）
 - 状態遷移・業務ルール・整合性チェック
-- Entity Repository / Domain Service の呼び出し
+- Entity Repository / Pure Service の呼び出し
 
 **Don’t**
 - 画面都合のデータ整形
@@ -102,6 +103,7 @@
 ## 4. 層横断ルール（重要）
 
 - Controller → Repository **直接呼び出し禁止**
+- Application Service → Repository **直接呼び出し禁止**
 - Query Service → Command Service **呼び出し禁止**
 - **業務ルールは Controller / Repository に書かない**
 - **状態遷移は Command Service のみ**
@@ -123,10 +125,11 @@
 ## 6. 保守向けチェックリスト（禁止事項）
 
 - [ ] Controller から Repository を直接叩いていない  
+- [ ] Application Service から Repository を直接叩いていない  
 - [ ] Query Service に状態遷移や更新がない  
 - [ ] Command Service が画面都合の整形をしない  
 - [ ] Repository に業務ルールが侵入していない  
-- [ ] Domain Service が状態を持たない（ステートレス）  
+- [ ] Pure Service が状態を持たない（ステートレス）  
 - [ ] Command Service の戻り値が業務データになっていない  
 - [ ] 例外・トランザクション境界が Application Service に集約されている
 
@@ -149,7 +152,9 @@ flowchart TD
   %% Cross-layer constraints (visual hints)
   classDef forbid fill:#ffe6e6,stroke:#d00,stroke-width:1px,color:#900;
   CxR[Controller→Repository 直呼び出し禁止]:::forbid
+  AxR[Application Service→Repository 直呼び出し禁止]:::forbid
   QxC[Query→Command 呼び出し禁止]:::forbid
   C -.NG.-> ER
+  A -.NG.-> ER
   QS -.NG.-> CS
 ```

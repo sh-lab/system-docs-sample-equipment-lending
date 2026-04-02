@@ -24,13 +24,15 @@ public class FindEquipmentByIdsQueryServiceImpl implements FindEquipmentByIdsQue
         if (request.equipmentIds() == null || request.equipmentIds().isEmpty()) {
             throw new BusinessException(BusinessMessageIds.EQUIPMENT_SELECTION_INVALID);
         }
-        List<FindEquipmentByIdsQueryService.EquipmentItem> items = equipmentRepository.findByIds(request.equipmentIds()).stream()
-                .map(equipment -> new FindEquipmentByIdsQueryService.EquipmentItem(
-                        equipment.equipmentId(),
-                        equipment.equipmentCode(),
-                        equipment.equipmentName(),
-                        equipment.equipmentType(),
-                        equipment.storageLocation()
+        List<FindEquipmentByIdsQueryService.EquipmentItem> items = equipmentRepository.findSummaryByIds(request.equipmentIds()).stream()
+                .map(summary -> new FindEquipmentByIdsQueryService.EquipmentItem(
+                        summary.equipmentId(),
+                        summary.equipmentCode(),
+                        summary.equipmentName(),
+                        summary.equipmentType(),
+                        summary.equipmentTypeName(),
+                        summary.storageLocation(),
+                        summary.statusCode()
                 ))
                 .toList();
         return new FindEquipmentByIdsQueryService.Response(items);

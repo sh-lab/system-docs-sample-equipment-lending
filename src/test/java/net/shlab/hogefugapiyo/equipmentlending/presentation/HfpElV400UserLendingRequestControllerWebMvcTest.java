@@ -11,7 +11,7 @@ import net.shlab.hogefugapiyo.equipmentlending.application.query.UserLendingRequ
 import net.shlab.hogefugapiyo.equipmentlending.application.query.UserLendingRequestViewData;
 import net.shlab.hogefugapiyo.equipmentlending.presentation.route.RoutePaths;
 import net.shlab.hogefugapiyo.equipmentlending.model.value.UserRole;
-import net.shlab.hogefugapiyo.framework.security.config.SecurityConfiguration;
+import net.shlab.hogefugapiyo.equipmentlending.infrastructure.security.config.SecurityConfiguration;
 import net.shlab.hogefugapiyo.framework.i18n.I18nMessageResolver;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -104,6 +104,32 @@ class HfpElV400UserLendingRequestControllerWebMvcTest {
                 .andExpect(content().string(containsString("[MSG_E_002]返却申請を更新できませんでした。最新の状態を確認してください。")))
                 .andExpect(content().string(containsString("返却申請")))
                 .andExpect(content().string(containsString("返却しました。")));
+    }
+
+    @Test
+    void lendingPostWithTooLongCommentRedisplaysSamePage() throws Exception {
+        given(initializeApplicationService.initialize("USER01", "V300", null, List.of(1001L, 1004L)))
+                .willReturn(lendingViewData());
+
+        mockMvc.perform(post(RoutePaths.HFP_ELV400_USER_LENDING_REQUEST_LENDING)
+                        .with(csrf())
+                        .with(userPrincipal("USER01", UserRole.USER))
+                        .param("equipmentIds", "1001", "1004")
+                        .param("requestComment", "a".repeat(501)))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("申請コメントは500文字以内で入力してください。")))
+                .andExpect(content().string(containsString("利用者貸出申請・返却画面")));
+    }
+
+    @Test
+    void returnPostWithoutRequestIdRedirectsToMypage() throws Exception {
+        mockMvc.perform(post(RoutePaths.HFP_ELV400_USER_LENDING_REQUEST_RETURN)
+                        .with(csrf())
+                        .with(userPrincipal("USER02", UserRole.USER))
+                        .param("version", "1")
+                        .param("returnRequestComment", "返却しました。"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl(RoutePaths.HFP_ELV100_USER_MYPAGE + "?errorMessageId=MSG_E_004"));
     }
 
     private UserLendingRequestViewData lendingViewData() {

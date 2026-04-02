@@ -8,7 +8,7 @@ import net.shlab.hogefugapiyo.equipmentlending.application.HfpElSas303StartLendi
 import net.shlab.hogefugapiyo.equipmentlending.application.BusinessException;
 import net.shlab.hogefugapiyo.equipmentlending.presentation.route.RoutePaths;
 import net.shlab.hogefugapiyo.equipmentlending.model.value.UserRole;
-import net.shlab.hogefugapiyo.framework.security.config.SecurityConfiguration;
+import net.shlab.hogefugapiyo.equipmentlending.infrastructure.security.config.SecurityConfiguration;
 import net.shlab.hogefugapiyo.framework.i18n.I18nMessageResolver;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -172,6 +172,26 @@ class HfpElV300EquipmentSearchControllerWebMvcTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl(RoutePaths.HFP_ELV300_EQUIPMENT_SEARCH
                         + "?equipmentName=%E9%95%B7%E6%9C%BA&equipmentType=DESK&lendingStatus=AVAILABLE&errorMessageId=MSG_E_001"));
+    }
+
+    @Test
+    void lendingStartWithoutSelectionRedisplaysSearchWithValidationMessage() throws Exception {
+        given(searchEquipmentApplicationService.search("長机", "DESK", "AVAILABLE"))
+                .willReturn(new SearchEquipmentQueryServiceImpl.Response(
+                        List.of(new SearchEquipmentQueryServiceImpl.EquipmentItem(1001L, "EQ-0001", "長机 2台", "長机", "第1倉庫", "貸出可能", true)),
+                        equipmentTypeOptions(),
+                        false
+                ));
+
+        mockMvc.perform(post(RoutePaths.HFP_ELV300_EQUIPMENT_SEARCH_LENDING_START)
+                        .with(csrf())
+                        .with(userPrincipal("USER02", UserRole.USER))
+                        .param("equipmentName", "長机")
+                        .param("equipmentType", "DESK")
+                        .param("lendingStatus", "AVAILABLE"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("貸出申請する備品を1件以上選択してください。")))
+                .andExpect(content().string(containsString("備品検索画面")));
     }
 
     private List<SearchEquipmentQueryServiceImpl.Option> equipmentTypeOptions() {

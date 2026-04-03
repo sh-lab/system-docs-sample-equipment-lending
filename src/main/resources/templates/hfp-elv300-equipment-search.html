@@ -26,34 +26,38 @@
        th:text="${infoMessage}">infoMessage</p>
     <h1 class="business-page-title" th:text="#{screen.elv300.title}">screen.elv300.title</h1>
 
-    <section class="business-section">
-        <h2 class="business-section__title" th:text="#{screen.elv300.search-conditions}">screen.elv300.search-conditions</h2>
-        <form class="business-search-form" method="get" th:action="@{/hfp-elv300-equipment-search}">
-            <div class="business-search-field">
-                <label class="business-search-field__label" for="equipmentName" th:text="#{screen.elv300.equipment-name}">screen.elv300.equipment-name</label>
-                <input class="business-search-field__control" id="equipmentName" name="equipmentName" th:value="${equipmentName}" type="text">
-            </div>
-            <div class="business-search-field">
-                <label class="business-search-field__label" for="equipmentType" th:text="#{screen.elv300.equipment-type}">screen.elv300.equipment-type</label>
-                <select class="business-search-field__control" id="equipmentType" name="equipmentType">
-                    <option th:text="#{screen.elv300.status-all}" value="">screen.elv300.status-all</option>
-                    <option th:each="equipmentTypeOption : ${equipmentTypeOptions}"
-                            th:selected="${equipmentTypeOption.equipmentTypeCode() == equipmentType}"
-                            th:text="${equipmentTypeOption.equipmentTypeLabel()}"
-                            th:value="${equipmentTypeOption.equipmentTypeCode()}">equipmentTypeLabel</option>
-                </select>
-            </div>
-            <div class="business-search-field">
-                <label class="business-search-field__label" for="lendingStatus" th:text="#{screen.elv300.lending-status}">screen.elv300.lending-status</label>
-                <select class="business-search-field__control" id="lendingStatus" name="lendingStatus">
-                    <option th:selected="${lendingStatus == 'AVAILABLE'}" th:text="#{screen.elv300.status-available}" value="AVAILABLE">screen.elv300.status-available</option>
-                    <option th:selected="${lendingStatus == 'NOT_AVAILABLE'}" th:text="#{screen.elv300.status-unavailable}" value="NOT_AVAILABLE">screen.elv300.status-unavailable</option>
-                    <option th:selected="${lendingStatus == 'ALL'}" th:text="#{screen.elv300.status-all}" value="ALL">screen.elv300.status-all</option>
-                </select>
-            </div>
-            <button class="business-button" th:text="#{label.search}" type="submit">label.search</button>
-        </form>
-    </section>
+     <section class="business-section">
+         <h2 class="business-section__title" th:text="#{screen.elv300.search-conditions}">screen.elv300.search-conditions</h2>
+         <form class="business-search-form" method="get" th:action="@{/hfp-elv300-equipment-search}">
+             <div class="business-search-form__row">
+                 <div class="business-search-field">
+                     <label class="business-search-field__label" for="equipmentName" th:text="#{screen.elv300.equipment-name}">screen.elv300.equipment-name</label>
+                     <input class="business-search-field__control" id="equipmentName" name="equipmentName" th:value="${equipmentName}" type="text">
+                 </div>
+                 <div class="business-search-field">
+                     <label class="business-search-field__label" for="equipmentType" th:text="#{screen.elv300.equipment-type}">screen.elv300.equipment-type</label>
+                     <select class="business-search-field__control" id="equipmentType" name="equipmentType">
+                         <option th:text="#{screen.elv300.status-all}" value="">screen.elv300.status-all</option>
+                         <option th:each="equipmentTypeOption : ${equipmentTypeOptions}"
+                                 th:selected="${equipmentTypeOption.equipmentTypeCode() == equipmentType}"
+                                 th:text="${equipmentTypeOption.equipmentTypeLabel()}"
+                                 th:value="${equipmentTypeOption.equipmentTypeCode()}">equipmentTypeLabel</option>
+                     </select>
+                 </div>
+                 <div class="business-search-field">
+                     <label class="business-search-field__label" for="lendingStatus" th:text="#{screen.elv300.lending-status}">screen.elv300.lending-status</label>
+                     <select class="business-search-field__control" id="lendingStatus" name="lendingStatus">
+                         <option th:selected="${lendingStatus == 'AVAILABLE'}" th:text="#{screen.elv300.status-available}" value="AVAILABLE">screen.elv300.status-available</option>
+                         <option th:selected="${lendingStatus == 'NOT_AVAILABLE'}" th:text="#{screen.elv300.status-unavailable}" value="NOT_AVAILABLE">screen.elv300.status-unavailable</option>
+                         <option th:selected="${lendingStatus == 'ALL'}" th:text="#{screen.elv300.status-all}" value="ALL">screen.elv300.status-all</option>
+                     </select>
+                 </div>
+             </div>
+             <div class="business-search-form__row business-search-form__row--actions">
+                 <button class="business-button" th:text="#{label.search}" type="submit">label.search</button>
+             </div>
+         </form>
+     </section>
 
     <section class="business-section">
         <h2 class="business-section__title" th:text="#{screen.elv300.result-list}">screen.elv300.result-list</h2>

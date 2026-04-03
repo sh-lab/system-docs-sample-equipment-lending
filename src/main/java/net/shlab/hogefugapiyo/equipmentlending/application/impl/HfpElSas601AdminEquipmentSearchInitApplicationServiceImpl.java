@@ -17,6 +17,6 @@ public class HfpElSas601AdminEquipmentSearchInitApplicationServiceImpl implement
 
     @Override
     public SearchAdminEquipmentQueryService.Response initialize() {
-        return searchAdminEquipmentQueryService.execute(new SearchAdminEquipmentQueryService.Request("", "", "ALL", null));
+        return searchAdminEquipmentQueryService.execute(new SearchAdminEquipmentQueryService.Request("", "", "ALL", null, null));
     }
 }

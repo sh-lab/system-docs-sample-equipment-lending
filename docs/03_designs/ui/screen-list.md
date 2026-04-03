@@ -25,6 +25,7 @@
 | `HFP-EL-V500_admin-lending-review` | 管理者承認・却下・返却確認画面 | 管理者が貸出申請の承認・却下、および返却確認を行う。 | 管理者 | 承認、却下、返却確認 | 遷移元：`管理者マイページ(V200)`、関連先：`管理者マイページ(V200)` | `docs/03_designs/ui/HFP-EL-V500_admin-lending-review.md` | 設計済み画面である。 |
 | `HFP-EL-V600_admin-equipment-search` | 管理者備品検索画面 | 管理者が備品を検索し、新規登録および情報更新対象の選定を行う。 | 管理者 | 備品検索、備品登録開始、備品情報更新開始 | 遷移元：`管理者マイページ(V200)`、関連先：`管理者マイページ(V200)`、`管理者備品編集画面(V700)` | `docs/03_designs/ui/HFP-EL-V600_admin-equipment-search.md` | 設計済み画面である。 |
 | `HFP-EL-V700_admin-equipment-edit` | 管理者備品編集画面 | 管理者が新規備品登録または登録済み備品の情報更新を行う。 | 管理者 | 備品登録、備品情報更新 | 遷移元：`管理者備品検索画面(V600)`、関連先：`管理者備品検索画面(V600)` | `docs/03_designs/ui/HFP-EL-V700_admin-equipment-edit.md` | 単一画面で新規登録モードと編集モードを切り替える。 |
+| `duplicate-submit-error` | 多重送信エラー画面 | 重複送信防止用ワンタイムトークン不正時に、再操作前の注意喚起とマイページへの復帰導線を提供する。 | 利用者、管理者 | 重複送信検知、再操作案内 | 遷移元：`利用者貸出申請・返却画面(V400)`、`管理者承認・却下・返却確認画面(V500)`、`管理者備品編集画面(V700)`、関連先：`利用者マイページ(V100)`、`管理者マイページ(V200)` | `docs/03_designs/ui/duplicate-submit-error.md` | 共通エラー画面であり、`login` と同様に画面ID体系の適用対象外とする。 |
 
 ---
 
@@ -45,6 +46,7 @@
 - 個別画面設計：`docs/03_designs/ui/HFP-EL-V500_admin-lending-review.md`
 - 個別画面設計：`docs/03_designs/ui/HFP-EL-V600_admin-equipment-search.md`
 - 個別画面設計：`docs/03_designs/ui/HFP-EL-V700_admin-equipment-edit.md`
+- 個別画面設計：`docs/03_designs/ui/duplicate-submit-error.md`
 - 個別画面設計：`docs/03_designs/ui/login.md`
 - 共通セキュリティ設計：`docs/03_designs/security-design.md`
 - データ設計：`docs/03_designs/data/M_USER.md`

@@ -1,4 +1,4 @@
-package net.shlab.hogefugapiyo.equipmentlending.presentation;
+package net.shlab.hogefugapiyo.equipmentlending.presentation.controller;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
@@ -45,25 +45,33 @@ public class HfpElV600AdminEquipmentSearchController extends AbstractBaseControl
             @RequestParam(value = "equipmentName", required = false) String equipmentName,
             @RequestParam(value = "equipmentType", required = false) String equipmentType,
             @RequestParam(value = "statusCode", required = false) String statusCode,
-            @RequestParam(value = "systemRegisteredDate", required = false) String systemRegisteredDate,
+            @RequestParam(value = "systemRegisteredDateFrom", required = false) String systemRegisteredDateFrom,
+            @RequestParam(value = "systemRegisteredDateTo", required = false) String systemRegisteredDateTo,
             @RequestParam(value = "messageId", required = false) String messageId,
             @RequestParam(value = "errorMessageId", required = false) String errorMessageId
     ) {
-        boolean initialDisplay = equipmentName == null && equipmentType == null && statusCode == null && systemRegisteredDate == null;
-        LocalDate parsedDate = parseDate(systemRegisteredDate);
-        String resolvedErrorMessageId = parsedDate == null && systemRegisteredDate != null && !systemRegisteredDate.isBlank()
+        boolean initialDisplay = equipmentName == null
+                && equipmentType == null
+                && statusCode == null
+                && systemRegisteredDateFrom == null
+                && systemRegisteredDateTo == null;
+        LocalDate parsedDateFrom = parseDate(systemRegisteredDateFrom);
+        LocalDate parsedDateTo = parseDate(systemRegisteredDateTo);
+        String resolvedErrorMessageId = hasInvalidDate(systemRegisteredDateFrom, parsedDateFrom)
+                || hasInvalidDate(systemRegisteredDateTo, parsedDateTo)
                 ? INVALID_DISPLAY_MESSAGE_ID
                 : errorMessageId;
         SearchAdminEquipmentQueryService.Response result = initialDisplay
                 ? initApplicationService.initialize()
-                : searchApplicationService.search(equipmentName, equipmentType, statusCode, parsedDate);
+                : searchApplicationService.search(equipmentName, equipmentType, statusCode, parsedDateFrom, parsedDateTo);
         model.addAttribute("equipmentItems", result.equipmentItems());
         model.addAttribute("equipmentTypeOptions", result.equipmentTypeOptions());
         model.addAttribute("statusOptions", result.statusOptions());
         model.addAttribute("equipmentName", normalize(equipmentName));
         model.addAttribute("equipmentType", normalize(equipmentType));
         model.addAttribute("statusCode", normalizeStatus(statusCode));
-        model.addAttribute("systemRegisteredDate", systemRegisteredDate == null ? "" : systemRegisteredDate);
+        model.addAttribute("systemRegisteredDateFrom", systemRegisteredDateFrom == null ? "" : systemRegisteredDateFrom);
+        model.addAttribute("systemRegisteredDateTo", systemRegisteredDateTo == null ? "" : systemRegisteredDateTo);
         model.addAttribute("warningMessage", result.hasMoreThanLimit() ? i18nMessageResolver().getBusinessMessage(TOO_MANY_RESULTS_MESSAGE_ID) : null);
         model.addAttribute("infoMessage", resolveInfoMessage(result, messageId));
         model.addAttribute("errorMessage", resolveMessage(resolvedErrorMessageId));
@@ -86,6 +94,10 @@ public class HfpElV600AdminEquipmentSearchController extends AbstractBaseControl
         } catch (DateTimeParseException ex) {
             return null;
         }
+    }
+
+    private boolean hasInvalidDate(String rawValue, LocalDate parsedValue) {
+        return rawValue != null && !rawValue.isBlank() && parsedValue == null;
     }
 
     private String normalize(String value) {

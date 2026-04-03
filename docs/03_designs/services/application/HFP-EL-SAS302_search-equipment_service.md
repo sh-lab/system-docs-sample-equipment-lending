@@ -57,8 +57,8 @@
 ### 7.2 出力DTO
 | 項目 | 型 | 必須 | 説明 |
 |-----|----|-----|-----|
-| equipmentItems | `List<SearchEquipmentQueryServiceImpl.EquipmentItem>` | ○ | 一覧表示用備品 |
-| equipmentTypeOptions | `List<SearchEquipmentQueryServiceImpl.Option>` | ○ | 備品種別マスタから取得した候補 |
+| equipmentItems | `List<SearchEquipmentQueryService.EquipmentItem>` | ○ | 一覧表示用備品 |
+| equipmentTypeOptions | `List<SearchEquipmentQueryService.Option>` | ○ | 備品種別マスタから取得した候補 |
 | hasMoreThanLimit | boolean | ○ | 件数上限超過有無 |
 
 ## 8. 例外マッピング方針
@@ -77,7 +77,7 @@
 - `NOT_AVAILABLE` は備品検索画面用の集約条件値であり、内部状態 `PENDING_LENDING`、`LENT`、`UNAVAILABLE`、`DISPOSED` をまとめて「AVAILABLE 以外すべて」を意味する。ドメイン層の `EquipmentStatus.UNAVAILABLE`（故障等による利用停止）とは異なる概念であるため混同しないこと。
 - 実装上のインターフェース名：`HfpElSas302SearchEquipmentApplicationService`
 - 実装上の主な入出力：
-  - 入力オブジェクト：`SearchEquipmentQueryServiceImpl.Request`
-  - 出力オブジェクト：`SearchEquipmentQueryServiceImpl.Response`
+  - 入力オブジェクト：`SearchEquipmentQueryService.Request`
+  - 出力オブジェクト：`SearchEquipmentQueryService.Response`
 
 ---

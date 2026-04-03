@@ -27,6 +27,7 @@ public final class RoutePaths {
     public static final String HFP_ELV700_ADMIN_EQUIPMENT_EDIT = "/" + Views.HFP_ELV700_ADMIN_EQUIPMENT_EDIT;
     public static final String HFP_ELV700_ADMIN_EQUIPMENT_EDIT_REGISTER = HFP_ELV700_ADMIN_EQUIPMENT_EDIT + "/register";
     public static final String HFP_ELV700_ADMIN_EQUIPMENT_EDIT_UPDATE = HFP_ELV700_ADMIN_EQUIPMENT_EDIT + "/update";
+    public static final String DUPLICATE_SUBMIT_ERROR = "/" + Views.DUPLICATE_SUBMIT_ERROR;
 
     private RoutePaths() {
     }

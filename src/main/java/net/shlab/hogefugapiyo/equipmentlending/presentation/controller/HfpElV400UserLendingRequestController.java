@@ -1,5 +1,6 @@
-package net.shlab.hogefugapiyo.equipmentlending.presentation;
+package net.shlab.hogefugapiyo.equipmentlending.presentation.controller;
 
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +16,7 @@ import net.shlab.hogefugapiyo.equipmentlending.presentation.form.UserLendingRegi
 import net.shlab.hogefugapiyo.equipmentlending.presentation.form.UserRejectedConfirmForm;
 import net.shlab.hogefugapiyo.equipmentlending.presentation.form.UserReturnRequestForm;
 import net.shlab.hogefugapiyo.equipmentlending.presentation.route.RoutePaths;
+import net.shlab.hogefugapiyo.equipmentlending.presentation.token.OneTimeTokenScopes;
 import net.shlab.hogefugapiyo.equipmentlending.presentation.views.Views;
 import net.shlab.hogefugapiyo.equipmentlending.presentation.controller.AbstractBaseController;
 import net.shlab.hogefugapiyo.framework.i18n.I18nMessageResolver;
@@ -68,6 +70,7 @@ public class HfpElV400UserLendingRequestController extends AbstractBaseControlle
     @GetMapping(RoutePaths.HFP_ELV400_USER_LENDING_REQUEST)
     public String show(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
+            HttpSession session,
             Model model,
             @RequestParam(value = "from", required = false) String from,
             @RequestParam(value = "requestId", required = false) Long requestId,
@@ -78,7 +81,7 @@ public class HfpElV400UserLendingRequestController extends AbstractBaseControlle
         String userId = userPrincipal.userId();
         try {
             UserLendingRequestViewData viewData = initializeApplicationService.initialize(userId, normalizeFrom(from), requestId, normalizeEquipmentIds(equipmentIds));
-            populateModel(model, viewData, resolveMessage(messageId), resolveMessage(errorMessageId));
+            populateModel(model, session, viewData, resolveMessage(messageId), resolveMessage(errorMessageId));
             return Views.HFP_ELV400_USER_LENDING_REQUEST;
         } catch (BusinessException ex) {
             return redirectBySource(normalizeFrom(from), ex.messageId());
@@ -88,6 +91,7 @@ public class HfpElV400UserLendingRequestController extends AbstractBaseControlle
     @PostMapping(RoutePaths.HFP_ELV400_USER_LENDING_REQUEST_LENDING)
     public String registerLending(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
+            HttpSession session,
             Model model,
             @Valid @ModelAttribute("lendingForm") UserLendingRegisterForm form,
             BindingResult bindingResult
@@ -97,19 +101,20 @@ public class HfpElV400UserLendingRequestController extends AbstractBaseControlle
             if (form.getEquipmentIds() == null || form.getEquipmentIds().isEmpty()) {
                 return redirectWithError(RoutePaths.HFP_ELV300_EQUIPMENT_SEARCH, BusinessMessageIds.EQUIPMENT_SELECTION_INVALID);
             }
-            return renderLendingValidationError(model, userId, form.getEquipmentIds(), form.getRequestComment(), bindingResult);
+            return renderLendingValidationError(model, session, userId, form.getEquipmentIds(), form.getRequestComment(), bindingResult);
         }
         try {
             lendingRequestApplicationService.register(userId, normalizeEquipmentIds(form.getEquipmentIds()), form.getRequestComment());
             return redirectWithMessage(RoutePaths.HFP_ELV100_USER_MYPAGE, BusinessMessageIds.LENDING_REQUEST_ACCEPTED);
         } catch (BusinessException ex) {
-            return renderLendingError(model, userId, normalizeEquipmentIds(form.getEquipmentIds()), form.getRequestComment(), ex.messageId());
+            return renderLendingError(model, session, userId, normalizeEquipmentIds(form.getEquipmentIds()), form.getRequestComment(), ex.messageId());
         }
     }
 
     @PostMapping(RoutePaths.HFP_ELV400_USER_LENDING_REQUEST_RETURN)
     public String registerReturn(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
+            HttpSession session,
             Model model,
             @Valid @ModelAttribute("returnForm") UserReturnRequestForm form,
             BindingResult bindingResult
@@ -119,19 +124,20 @@ public class HfpElV400UserLendingRequestController extends AbstractBaseControlle
             if (form.getRequestId() == null) {
                 return redirectWithError(RoutePaths.HFP_ELV100_USER_MYPAGE, BusinessMessageIds.REQUEST_DISPLAY_INVALID);
             }
-            return renderRequestValidationError(model, userId, form.getRequestId(), form.getReturnRequestComment(), bindingResult);
+            return renderRequestValidationError(model, session, userId, form.getRequestId(), form.getReturnRequestComment(), bindingResult);
         }
         try {
             returnRequestApplicationService.register(userId, form.getRequestId(), form.getReturnRequestComment(), form.getVersion());
             return redirectWithMessage(RoutePaths.HFP_ELV100_USER_MYPAGE, BusinessMessageIds.RETURN_REQUEST_ACCEPTED);
         } catch (BusinessException ex) {
-            return renderRequestError(model, userId, form.getRequestId(), form.getReturnRequestComment(), ex.messageId());
+            return renderRequestError(model, session, userId, form.getRequestId(), form.getReturnRequestComment(), ex.messageId());
         }
     }
 
     @PostMapping(RoutePaths.HFP_ELV400_USER_LENDING_REQUEST_REJECTED_CONFIRM)
     public String confirmRejected(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
+            HttpSession session,
             Model model,
             @Valid @ModelAttribute("rejectedConfirmForm") UserRejectedConfirmForm form,
             BindingResult bindingResult
@@ -141,20 +147,20 @@ public class HfpElV400UserLendingRequestController extends AbstractBaseControlle
             if (form.getRequestId() == null) {
                 return redirectWithError(RoutePaths.HFP_ELV100_USER_MYPAGE, BusinessMessageIds.REQUEST_DISPLAY_INVALID);
             }
-            return renderRequestValidationError(model, userId, form.getRequestId(), null, bindingResult);
+            return renderRequestValidationError(model, session, userId, form.getRequestId(), null, bindingResult);
         }
         try {
             rejectedRequestConfirmApplicationService.confirm(userId, form.getRequestId(), form.getVersion());
             return redirectWithMessage(RoutePaths.HFP_ELV100_USER_MYPAGE, BusinessMessageIds.REJECTED_CONFIRM_COMPLETED);
         } catch (BusinessException ex) {
-            return renderRequestError(model, userId, form.getRequestId(), null, ex.messageId());
+            return renderRequestError(model, session, userId, form.getRequestId(), null, ex.messageId());
         }
     }
 
-    private String renderLendingError(Model model, String userId, List<Long> equipmentIds, String requestComment, String errorMessageId) {
+    private String renderLendingError(Model model, HttpSession session, String userId, List<Long> equipmentIds, String requestComment, String errorMessageId) {
         try {
             UserLendingRequestViewData viewData = initializeApplicationService.initialize(userId, FROM_EQUIPMENT_SEARCH, null, equipmentIds);
-            populateModel(model, viewData, null, resolveMessage(errorMessageId));
+            populateModel(model, session, viewData, null, resolveMessage(errorMessageId));
             model.addAttribute("requestComment", requestComment == null ? "" : requestComment);
             return Views.HFP_ELV400_USER_LENDING_REQUEST;
         } catch (BusinessException ex) {
@@ -162,10 +168,10 @@ public class HfpElV400UserLendingRequestController extends AbstractBaseControlle
         }
     }
 
-    private String renderRequestError(Model model, String userId, long requestId, String returnRequestComment, String errorMessageId) {
+    private String renderRequestError(Model model, HttpSession session, String userId, long requestId, String returnRequestComment, String errorMessageId) {
         try {
             UserLendingRequestViewData viewData = initializeApplicationService.initialize(userId, FROM_USER_MYPAGE, requestId, List.of());
-            populateModel(model, viewData, null, resolveMessage(errorMessageId));
+            populateModel(model, session, viewData, null, resolveMessage(errorMessageId));
             if (returnRequestComment != null) {
                 model.addAttribute("returnRequestComment", returnRequestComment);
             }
@@ -177,6 +183,7 @@ public class HfpElV400UserLendingRequestController extends AbstractBaseControlle
 
     private String renderLendingValidationError(
             Model model,
+            HttpSession session,
             String userId,
             List<Long> equipmentIds,
             String requestComment,
@@ -184,7 +191,7 @@ public class HfpElV400UserLendingRequestController extends AbstractBaseControlle
     ) {
         try {
             UserLendingRequestViewData viewData = initializeApplicationService.initialize(userId, FROM_EQUIPMENT_SEARCH, null, equipmentIds);
-            populateModel(model, viewData, null, null);
+            populateModel(model, session, viewData, null, null);
             ValidationErrorSupport.populate(model, bindingResult);
             model.addAttribute("requestComment", requestComment == null ? "" : requestComment);
             return Views.HFP_ELV400_USER_LENDING_REQUEST;
@@ -195,6 +202,7 @@ public class HfpElV400UserLendingRequestController extends AbstractBaseControlle
 
     private String renderRequestValidationError(
             Model model,
+            HttpSession session,
             String userId,
             long requestId,
             String returnRequestComment,
@@ -202,7 +210,7 @@ public class HfpElV400UserLendingRequestController extends AbstractBaseControlle
     ) {
         try {
             UserLendingRequestViewData viewData = initializeApplicationService.initialize(userId, FROM_USER_MYPAGE, requestId, List.of());
-            populateModel(model, viewData, null, null);
+            populateModel(model, session, viewData, null, null);
             ValidationErrorSupport.populate(model, bindingResult);
             if (returnRequestComment != null) {
                 model.addAttribute("returnRequestComment", returnRequestComment);
@@ -213,7 +221,7 @@ public class HfpElV400UserLendingRequestController extends AbstractBaseControlle
         }
     }
 
-    private void populateModel(Model model, UserLendingRequestViewData viewData, String infoMessage, String errorMessage) {
+    private void populateModel(Model model, HttpSession session, UserLendingRequestViewData viewData, String infoMessage, String errorMessage) {
         model.addAttribute("viewData", viewData);
         model.addAttribute("isLendingMode", viewData.mode() == LendingRequestScreenMode.LENDING);
         model.addAttribute("isReturnMode", viewData.mode() == LendingRequestScreenMode.RETURN);
@@ -222,6 +230,9 @@ public class HfpElV400UserLendingRequestController extends AbstractBaseControlle
         model.addAttribute("errorMessage", errorMessage);
         model.addAttribute("requestComment", viewData.requestComment());
         model.addAttribute("returnRequestComment", viewData.returnRequestComment());
+        issueOneTimeToken(model, session, "lendingToken", OneTimeTokenScopes.V400_LENDING);
+        issueOneTimeToken(model, session, "returnToken", OneTimeTokenScopes.V400_RETURN);
+        issueOneTimeToken(model, session, "rejectedConfirmToken", OneTimeTokenScopes.V400_REJECTED_CONFIRM);
     }
 
     private String normalizeFrom(String from) {

@@ -53,8 +53,8 @@
 ### 7.2 出力DTO
 | 項目 | 型 | 必須 | 説明 |
 |-----|----|-----|-----|
-| equipmentItems | `List<SearchEquipmentQueryServiceImpl.EquipmentItem>` | ○ | 一覧表示用備品 |
-| equipmentTypeOptions | `List<SearchEquipmentQueryServiceImpl.Option>` | ○ | 備品種別マスタから取得した候補 |
+| equipmentItems | `List<SearchEquipmentQueryService.EquipmentItem>` | ○ | 一覧表示用備品 |
+| equipmentTypeOptions | `List<SearchEquipmentQueryService.Option>` | ○ | 備品種別マスタから取得した候補 |
 | hasMoreThanLimit | boolean | ○ | 件数上限超過有無 |
 
 ## 8. 例外マッピング方針
@@ -72,6 +72,6 @@
 - 関連機能要件：`FR-001`、`FR-002`
 - 実装上のインターフェース名：`HfpElSas301EquipmentSearchInitApplicationService`
 - 実装上の主な出力オブジェクト：
-  - `SearchEquipmentQueryServiceImpl.Response`
+  - `SearchEquipmentQueryService.Response`
 
 ---

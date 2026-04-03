@@ -6,7 +6,13 @@ import net.shlab.hogefugapiyo.framework.core.repository.QueryRepository;
 
 public interface AdminEquipmentSearchQueryRepository extends QueryRepository {
 
-    record Criteria(String equipmentName, String equipmentType, String statusCode, LocalDate systemRegisteredDate) {
+    record Criteria(
+            String equipmentName,
+            String equipmentType,
+            String statusCode,
+            LocalDate systemRegisteredDateFrom,
+            LocalDate systemRegisteredDateTo
+    ) {
     }
 
     record EquipmentRow(long equipmentId, String equipmentCode, String equipmentName,

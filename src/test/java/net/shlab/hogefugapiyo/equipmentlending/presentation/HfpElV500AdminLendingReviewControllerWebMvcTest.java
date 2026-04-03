@@ -18,21 +18,26 @@ import net.shlab.hogefugapiyo.equipmentlending.application.HfpElSas502ApproveLen
 import net.shlab.hogefugapiyo.equipmentlending.application.HfpElSas503RejectLendingRequestApplicationService;
 import net.shlab.hogefugapiyo.equipmentlending.application.HfpElSas504ReturnConfirmApplicationService;
 import net.shlab.hogefugapiyo.equipmentlending.application.query.AdminLendingReviewMode;
+import net.shlab.hogefugapiyo.equipmentlending.presentation.controller.HfpElV500AdminLendingReviewController;
 import net.shlab.hogefugapiyo.equipmentlending.presentation.route.RoutePaths;
 import net.shlab.hogefugapiyo.equipmentlending.model.value.UserRole;
 import net.shlab.hogefugapiyo.framework.i18n.I18nMessageResolver;
+import net.shlab.hogefugapiyo.equipmentlending.presentation.config.PresentationWebMvcConfiguration;
+import net.shlab.hogefugapiyo.equipmentlending.presentation.token.OneTimeTokenScopes;
+import net.shlab.hogefugapiyo.framework.web.OneTimeTokenSupport;
 import net.shlab.hogefugapiyo.equipmentlending.infrastructure.security.config.SecurityConfiguration;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.Mockito.doNothing;
 
 @WebMvcTest(HfpElV500AdminLendingReviewController.class)
-@Import(SecurityConfiguration.class)
+@Import({SecurityConfiguration.class, PresentationWebMvcConfiguration.class})
 class HfpElV500AdminLendingReviewControllerWebMvcTest {
 
     @Autowired
@@ -70,11 +75,14 @@ class HfpElV500AdminLendingReviewControllerWebMvcTest {
     @Test
     void approveRedirectsToAdminMypageOnSuccess() throws Exception {
         doNothing().when(approveApplicationService).approve("ADMIN1", 2001L, "承認する。", 0);
+        MockHttpSession session = sessionWithToken(OneTimeTokenScopes.V500_REVIEW);
 
         mockMvc.perform(post(RoutePaths.HFP_ELV500_ADMIN_LENDING_REVIEW_APPROVE)
+                        .session(session)
                         .with(csrf())
                         .param("requestId", "2001")
                         .param("version", "0")
+                        .param("oneTimeToken", token(session, OneTimeTokenScopes.V500_REVIEW))
                         .param("reviewComment", "承認する。")
                         .with(userPrincipal("ADMIN1", UserRole.ADMIN)))
                 .andExpect(status().is3xxRedirection())
@@ -84,16 +92,29 @@ class HfpElV500AdminLendingReviewControllerWebMvcTest {
     @Test
     void approveWithTooLongCommentRedisplaysSamePage() throws Exception {
         given(initializeApplicationService.initialize("ADMIN1", 2001L)).willReturn(approvalViewData());
+        MockHttpSession session = sessionWithToken(OneTimeTokenScopes.V500_REVIEW);
 
         mockMvc.perform(post(RoutePaths.HFP_ELV500_ADMIN_LENDING_REVIEW_APPROVE)
+                        .session(session)
                         .with(csrf())
                         .with(userPrincipal("ADMIN1", UserRole.ADMIN))
                         .param("requestId", "2001")
                         .param("version", "0")
+                        .param("oneTimeToken", token(session, OneTimeTokenScopes.V500_REVIEW))
                         .param("reviewComment", "a".repeat(501)))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("管理者コメントは500文字以内で入力してください。")))
                 .andExpect(content().string(containsString("管理者承認・却下・返却確認画面")));
+    }
+
+    private MockHttpSession sessionWithToken(String scope) {
+        MockHttpSession session = new MockHttpSession();
+        OneTimeTokenSupport.issueToken(session, scope);
+        return session;
+    }
+
+    private String token(MockHttpSession session, String scope) {
+        return OneTimeTokenSupport.issueToken(session, scope);
     }
 
     private FindAdminLendingReviewQueryServiceImpl.Response approvalViewData() {

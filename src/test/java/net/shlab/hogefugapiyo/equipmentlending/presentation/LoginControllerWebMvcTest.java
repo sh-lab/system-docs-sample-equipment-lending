@@ -3,6 +3,7 @@ package net.shlab.hogefugapiyo.equipmentlending.presentation;
 import net.shlab.hogefugapiyo.equipmentlending.application.query.impl.FindLoginUserQueryServiceImpl;
 import java.util.Optional;
 import net.shlab.hogefugapiyo.equipmentlending.application.LoginApplicationService;
+import net.shlab.hogefugapiyo.equipmentlending.presentation.controller.LoginController;
 import net.shlab.hogefugapiyo.equipmentlending.presentation.route.RoutePaths;
 import net.shlab.hogefugapiyo.equipmentlending.model.value.UserRole;
 import net.shlab.hogefugapiyo.framework.i18n.I18nMessageResolver;

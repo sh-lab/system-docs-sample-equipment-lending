@@ -32,12 +32,11 @@
 2. 備品種別マスタから有効な候補一覧を取得する。
 3. 状態候補として `AVAILABLE`、`UNAVAILABLE`、`DISPOSED` を取得する。
 4. `編集モード` の場合は、対象備品IDに対応する備品情報を取得する。
-5. 取得結果を `EquipmentItem` と候補一覧へ詰め替えて返却する。
+5. 取得結果を `FindAdminEquipmentEditQueryService.Response` へ詰め替えて返却する。
 
 ## 6. 使用するコンポーネント
-- **Repository / Data Access**：
-  - `EquipmentRepository` または同等の参照手段
-  - `EquipmentTypeRepository` または同等の参照手段
+- **Query Repository**：
+  - `AdminEquipmentEditQueryRepository`
 - **補助コンポーネント**：
   - なし
 
@@ -46,28 +45,32 @@
 ### 7.1 入力
 | 項目 | 型 | 必須 | 備考 |
 |------|----|------|------|
-| screenMode | string | ○ | `create` または `edit` |
+| mode | string | ○ | `create` または `edit` |
 | equipmentId | long | 条件付き必須 | `edit` の場合に指定する |
 
 ### 7.2 出力
 | 項目 | 型 | 必須 | 説明 |
 |------|----|------|------|
-| equipmentItem | `EquipmentItem` | 任意 | `edit` 時に返却する備品表示情報 |
-| equipmentTypeOptions | `List<Option>` | ○ | 備品種別マスタから取得した候補 |
-| equipmentStatusOptions | `List<Option>` | ○ | 備品状態候補 |
+| mode | string | ○ | `create` または `edit` |
+| displaySystemRegisteredDate | date | ○ | `create` 時は当日、`edit` 時は既存のシステム登録日 |
+| equipmentDetail | `FindAdminEquipmentEditQueryService.EquipmentDetail` | 任意 | `edit` 時に返却する備品表示情報 |
+| equipmentTypeOptions | `List<FindAdminEquipmentEditQueryService.Option>` | ○ | 備品種別マスタから取得した候補 |
+| statusOptions | `List<FindAdminEquipmentEditQueryService.Option>` | ○ | 備品状態候補 |
 
-#### EquipmentItem
+#### EquipmentDetail
 | 項目 | 型 | 必須 | 説明 |
 |------|----|------|------|
 | equipmentId | long | ○ | 備品ID |
 | equipmentCode | string | ○ | 備品管理番号 |
 | equipmentName | string | ○ | 備品名 |
 | equipmentType | string | ○ | 備品種別マスタを参照するコード |
+| equipmentTypeLabel | string | ○ | 備品種別マスタに基づく表示名 |
 | storageLocation | string | ○ | 保管場所 |
 | systemRegisteredDate | date | ○ | システム登録日 |
-| currentStatus | string | ○ | 現在状態コード |
+| currentStatusCode | string | ○ | 現在状態コード |
+| currentStatusLabel | string | ○ | 現在状態表示ラベル |
 | remarks | string | 任意 | 備考 |
-| version | long | ○ | 楽観ロック確認用 |
+| version | int | ○ | 楽観ロック確認用 |
 
 #### Option
 | 項目 | 型 | 必須 | 説明 |
@@ -91,6 +94,6 @@
 - 関連画面：`管理者備品編集画面(V700)`
 - 関連ユースケース：`UC-008`、`UC-009`
 - 関連機能要件：`FR-009`、`FR-010`
-- 実装上のインターフェース名：`HfpElSqs701AdminEquipmentEditQueryService`
+- 実装上のインターフェース名：`FindAdminEquipmentEditQueryService`
 
 ---

@@ -54,7 +54,7 @@
 ### 7.2 出力DTO
 | 項目 | 型 | 必須 | 説明 |
 |-----|----|-----|-----|
-| selectedRequest | `FindAdminLendingReviewQueryServiceImpl.Detail` | ○ | 選択中申請詳細 |
+| selectedRequest | `FindAdminLendingReviewQueryService.Detail` | ○ | 選択中申請詳細 |
 | mode | string | ○ | `APPROVAL_REVIEW` または `RETURN_CONFIRM` |
 
 ## 8. 例外マッピング方針

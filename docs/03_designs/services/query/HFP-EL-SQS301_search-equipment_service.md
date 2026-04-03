@@ -52,8 +52,8 @@
 ### 6.1 一覧 DTO（サマリ）
 | 項目名 | 型 | 必須 | 説明 |
 |--------|----|------|------|
-| equipmentItems | `List<SearchEquipmentQueryServiceImpl.EquipmentItem>` | ○ | 備品一覧 |
-| equipmentTypeOptions | `List<SearchEquipmentQueryServiceImpl.Option>` | ○ | 備品種別マスタから取得した候補 |
+| equipmentItems | `List<SearchEquipmentQueryService.EquipmentItem>` | ○ | 備品一覧 |
+| equipmentTypeOptions | `List<SearchEquipmentQueryService.Option>` | ○ | 備品種別マスタから取得した候補 |
 | hasMoreThanLimit | boolean | ○ | 100 件超過有無 |
 
 ### 6.2 詳細 DTO（必要時のみ）
@@ -116,8 +116,8 @@
 - 備品検索画面では、内部状態 `AVAILABLE` を `貸出可能`、それ以外の表示対象状態を `貸出不可` として返却する。
 - 実装上のインターフェース名：`SearchEquipmentQueryService`
 - 実装上の主な入出力：
-  - 入力オブジェクト：`SearchEquipmentQueryServiceImpl.Request`
-  - 出力オブジェクト：`SearchEquipmentQueryServiceImpl.Response`
+  - 入力オブジェクト：`SearchEquipmentQueryService.Request`
+  - 出力オブジェクト：`SearchEquipmentQueryService.Response`
   - データ取得部品：`EquipmentSearchQueryRepository`
 
 ---

@@ -13,6 +13,7 @@ public final class Views {
     public static final String HFP_ELV500_ADMIN_LENDING_REVIEW = "hfp-elv500-admin-lending-review";
     public static final String HFP_ELV600_ADMIN_EQUIPMENT_SEARCH = "hfp-elv600-admin-equipment-search";
     public static final String HFP_ELV700_ADMIN_EQUIPMENT_EDIT = "hfp-elv700-admin-equipment-edit";
+    public static final String DUPLICATE_SUBMIT_ERROR = "duplicate-submit-error";
 
     private Views() {
     }

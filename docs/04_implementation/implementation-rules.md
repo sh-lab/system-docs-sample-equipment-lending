@@ -91,12 +91,16 @@ net.shlab.hogefugapiyo.equipmentlending
 - バリデーションエラー時は、画面上部に該当エラーを全件表示する。
 - 単項目バリデーションメッセージは、対象入力項目の右または下に表示する。
 - 業務判断、状態変更、永続化を行ってはならない。
-- 全ての Controller は `net.shlab.hogefugapiyo.framework.core.controller.AbstractBaseController` を継承する。
+- 画面 Controller は `net.shlab.hogefugapiyo.equipmentlending.presentation.controller` 配下へ配置する。
+- 全ての画面 Controller は `net.shlab.hogefugapiyo.equipmentlending.presentation.controller.AbstractBaseController` を継承する。
 - `@GetMapping` および `@PostMapping` の経路は `net.shlab.hogefugapiyo.equipmentlending.presentation.route.RoutePaths` の定数を参照する。
 - 画面表示用 `@GetMapping` に対応するメソッド名は `show()` とする。
 - 更新系 `POST` は成功時に Post/Redirect/Get を適用し、`redirect:` を返すことを原則とする。
 - バリデーションエラー等で同一画面を再表示する必要がある場合に限り、`POST` から画面を再描画してよい。
 - リダイレクト後に表示する完了メッセージ等は `RedirectAttributes` 等の一時的な受け渡し手段を用いる。
+- 重複送信防止が必要な更新系 `POST` では、PRG に加えて `HandlerInterceptor` によるワンタイムトークン検証を適用し、送信中の一時非活性化を併用する。
+- Controller はワンタイムトークンの表示用 hidden 値を払い出すが、検証・消費は個別 Controller で実装しない。
+- ワンタイムトークン不正時は、個別画面の再表示へ戻さず、共通の専用エラー画面へ遷移させる。
 
 ### 4.3 Application Service
 
@@ -365,6 +369,8 @@ net.shlab.hogefugapiyo.equipmentlending
 - Web アプリケーションのセキュリティ前提は Spring Security で横断的に構成する。
 - CSRF 対策は有効を正とし、更新系リクエストで無効化を前提にしない。
 - `POST`、`PUT`、`PATCH`、`DELETE` を送信する画面テンプレートでは、Spring Security が提供する CSRF トークンを送信する。
+- 重複送信防止用のワンタイムトークンは、CSRF トークンとは別目的の値として扱い、更新系フォームごとに送信する。
+- ワンタイムトークンの生成・消費ロジックは共通部へ集約し、個別 Controller で独自実装しない。
 - セキュリティ設定は framework / configuration 配下の共通設定へ集約し、業務 Controller や Service に分散させない。
 - 認証・認可の詳細は学習用として簡易化してよいが、業務ロジックとは分離して扱う。
 

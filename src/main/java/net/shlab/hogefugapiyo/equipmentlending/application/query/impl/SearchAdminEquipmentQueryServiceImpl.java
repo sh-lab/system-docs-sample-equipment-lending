@@ -22,7 +22,8 @@ public class SearchAdminEquipmentQueryServiceImpl implements SearchAdminEquipmen
                         request.equipmentName(),
                         request.equipmentType(),
                         request.statusCode(),
-                        request.systemRegisteredDate()))
+                        request.systemRegisteredDateFrom(),
+                        request.systemRegisteredDateTo()))
                 .stream()
                 .map(this::toItem)
                 .toList();

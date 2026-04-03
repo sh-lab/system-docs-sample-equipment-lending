@@ -3,6 +3,7 @@ package net.shlab.hogefugapiyo.equipmentlending.presentation;
 import net.shlab.hogefugapiyo.equipmentlending.application.query.impl.FindUserMypageQueryServiceImpl;
 import java.util.List;
 import net.shlab.hogefugapiyo.equipmentlending.application.HfpElSas101UserMypageInitApplicationService;
+import net.shlab.hogefugapiyo.equipmentlending.presentation.controller.HfpElV100UserMypageController;
 import net.shlab.hogefugapiyo.equipmentlending.presentation.route.RoutePaths;
 import net.shlab.hogefugapiyo.equipmentlending.model.value.UserRole;
 import net.shlab.hogefugapiyo.equipmentlending.infrastructure.security.config.SecurityConfiguration;

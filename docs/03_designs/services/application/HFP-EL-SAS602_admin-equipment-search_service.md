@@ -7,7 +7,7 @@
 ## 2. 役割と責務
 - `管理者備品検索画面(V600)` の検索実行ユースケース境界を担う。
 - 画面入力された検索条件を正規化し、Query Service へ委譲する。
-- 備品状態の許可値を制御し、不正値は `ALL` に補正する。
+- 備品状態コードの前後空白を除去し、未指定時は `ALL` に補正する。
 
 ## 3. 目的・スコープ
 - 目的：管理者が入力した条件で備品を検索し、表示用の結果一覧を返す。
@@ -30,9 +30,9 @@
   - UI へエラーが通知される。
 
 ## 5. 処理フロー概要
-1. 備品名、備品種別、備品状態、システム登録日を受け取る。
+1. 備品名、備品種別、備品状態コード、システム登録日From、システム登録日Toを受け取る。
 2. 文字列条件の前後空白を除去し、未指定値は空文字または `null` へ正規化する。
-3. `equipmentStatus` が `ALL`、`AVAILABLE`、`PENDING_LENDING`、`LENT`、`UNAVAILABLE`、`DISPOSED` 以外の場合は `ALL` を適用する。
+3. `statusCode` の前後空白を除去し、空文字または `null` の場合は `ALL` を適用する。
 4. 検索条件を検索処理へ引き渡せる形に整える。
 5. 管理者備品検索用の取得処理を呼び出す。
 6. 検索結果を UI へ返却する。
@@ -52,19 +52,20 @@
 |-----|----|-----|-----|
 | equipmentName | string | 任意 | 前後空白を除去したうえで部分一致条件へ利用する |
 | equipmentType | string | 任意 | 前後空白を除去したうえで完全一致条件へ利用する |
-| equipmentStatus | string | 任意 | `ALL`、`AVAILABLE`、`PENDING_LENDING`、`LENT`、`UNAVAILABLE`、`DISPOSED` を許可する |
-| systemRegisteredDate | date | 任意 | 完全一致条件へ利用する |
+| statusCode | string | 任意 | 未指定時は `ALL` を適用する。画面選択肢としては `ALL`、`AVAILABLE`、`PENDING_LENDING`、`LENT`、`UNAVAILABLE`、`DISPOSED` を想定する |
+| systemRegisteredDateFrom | date | 任意 | 下限条件へ利用する |
+| systemRegisteredDateTo | date | 任意 | 上限条件へ利用する |
 
 ### 7.2 出力DTO
 | 項目 | 型 | 必須 | 説明 |
 |-----|----|-----|-----|
-| equipmentItems | `List<AdminEquipmentSearchQueryServiceImpl.EquipmentItem>` | ○ | 一覧表示用備品 |
-| equipmentTypeOptions | `List<AdminEquipmentSearchQueryServiceImpl.Option>` | ○ | 備品種別マスタから取得した検索条件プルダウン候補 |
-| equipmentStatusOptions | `List<AdminEquipmentSearchQueryServiceImpl.Option>` | ○ | 検索条件プルダウンに表示する備品状態候補 |
+| equipmentItems | `List<SearchAdminEquipmentQueryService.EquipmentItem>` | ○ | 一覧表示用備品 |
+| equipmentTypeOptions | `List<SearchAdminEquipmentQueryService.Option>` | ○ | 備品種別マスタから取得した検索条件プルダウン候補 |
+| statusOptions | `List<SearchAdminEquipmentQueryService.Option>` | ○ | 検索条件プルダウンに表示する備品状態候補 |
 | hasMoreThanLimit | boolean | ○ | 件数上限超過有無 |
 
 ## 8. 例外マッピング方針
-- 業務例外：備品状態の不正値は例外とせず `ALL` へ補正する。
+- 業務例外：検索条件の正規化では業務例外を送出しない。
 - システム例外：データアクセス障害などは汎用エラーとして通知する。
 - 参照：`02_architecture/error-handling.md`
 
@@ -76,6 +77,7 @@
 - 関連画面：`管理者備品検索画面(V600)`
 - 関連ユースケース：`UC-007`
 - 関連機能要件：`FR-008`
-- 実装上のインターフェース名：`HfpElSas602AdminEquipmentSearchApplicationService`
-
----
+- 実装上のインターフェース名：`HfpElSas602SearchAdminEquipmentApplicationService`
+- 実装上の主な入出力：
+  - 入力オブジェクト：`SearchAdminEquipmentQueryService.Request`
+  - 出力オブジェクト：`SearchAdminEquipmentQueryService.Response`

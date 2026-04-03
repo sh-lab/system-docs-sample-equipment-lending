@@ -6,6 +6,7 @@ import net.shlab.hogefugapiyo.equipmentlending.application.HfpElSas301EquipmentS
 import net.shlab.hogefugapiyo.equipmentlending.application.HfpElSas302SearchEquipmentApplicationService;
 import net.shlab.hogefugapiyo.equipmentlending.application.HfpElSas303StartLendingRequestApplicationService;
 import net.shlab.hogefugapiyo.equipmentlending.application.BusinessException;
+import net.shlab.hogefugapiyo.equipmentlending.presentation.controller.HfpElV300EquipmentSearchController;
 import net.shlab.hogefugapiyo.equipmentlending.presentation.route.RoutePaths;
 import net.shlab.hogefugapiyo.equipmentlending.model.value.UserRole;
 import net.shlab.hogefugapiyo.equipmentlending.infrastructure.security.config.SecurityConfiguration;

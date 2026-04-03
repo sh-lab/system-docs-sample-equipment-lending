@@ -17,12 +17,19 @@ public class HfpElSas602SearchAdminEquipmentApplicationServiceImpl implements Hf
     }
 
     @Override
-    public SearchAdminEquipmentQueryService.Response search(String equipmentName, String equipmentType, String statusCode, LocalDate systemRegisteredDate) {
+    public SearchAdminEquipmentQueryService.Response search(
+            String equipmentName,
+            String equipmentType,
+            String statusCode,
+            LocalDate systemRegisteredDateFrom,
+            LocalDate systemRegisteredDateTo
+    ) {
         return searchAdminEquipmentQueryService.execute(new SearchAdminEquipmentQueryService.Request(
                 normalize(equipmentName),
                 normalize(equipmentType),
                 normalizeStatus(statusCode),
-                systemRegisteredDate
+                systemRegisteredDateFrom,
+                systemRegisteredDateTo
         ));
     }
 

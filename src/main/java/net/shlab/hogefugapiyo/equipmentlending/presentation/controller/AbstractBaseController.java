@@ -1,8 +1,11 @@
 package net.shlab.hogefugapiyo.equipmentlending.presentation.controller;
 
+import jakarta.servlet.http.HttpSession;
 import net.shlab.hogefugapiyo.equipmentlending.presentation.route.RoutePaths;
 import net.shlab.hogefugapiyo.framework.core.controller.BaseController;
 import net.shlab.hogefugapiyo.framework.i18n.I18nMessageResolver;
+import net.shlab.hogefugapiyo.framework.web.OneTimeTokenSupport;
+import org.springframework.ui.Model;
 
 /**
  * コントローラの共通基底クラス。
@@ -35,4 +38,9 @@ public abstract class AbstractBaseController implements BaseController {
     protected String redirectWithError(String routePath, String messageId) {
         return "redirect:" + routePath + "?errorMessageId=" + messageId;
     }
+
+    protected void issueOneTimeToken(Model model, HttpSession session, String attributeName, String scope) {
+        model.addAttribute(attributeName, OneTimeTokenSupport.issueToken(session, scope));
+    }
+
 }

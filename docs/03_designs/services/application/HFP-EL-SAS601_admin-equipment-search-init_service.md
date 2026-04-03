@@ -31,7 +31,7 @@
 
 ## 5. 処理フロー概要
 1. 初期表示要求を受け取る。
-2. 既定条件として `equipmentName = ""`、`equipmentType = ""`、`equipmentStatus = "ALL"`、`systemRegisteredDate = null` を適用する。
+2. 既定条件として `equipmentName = ""`、`equipmentType = ""`、`statusCode = "ALL"`、`systemRegisteredDateFrom = null`、`systemRegisteredDateTo = null` を適用する。
 3. 管理者備品検索用の取得処理を呼び出す。
 4. 検索結果を UI へ返却する。
 
@@ -53,9 +53,9 @@
 ### 7.2 出力DTO
 | 項目 | 型 | 必須 | 説明 |
 |-----|----|-----|-----|
-| equipmentItems | `List<AdminEquipmentSearchQueryServiceImpl.EquipmentItem>` | ○ | 一覧表示用備品 |
-| equipmentTypeOptions | `List<AdminEquipmentSearchQueryServiceImpl.Option>` | ○ | 備品種別マスタから取得した検索条件プルダウン候補 |
-| equipmentStatusOptions | `List<AdminEquipmentSearchQueryServiceImpl.Option>` | ○ | 検索条件プルダウンに表示する備品状態候補 |
+| equipmentItems | `List<SearchAdminEquipmentQueryService.EquipmentItem>` | ○ | 一覧表示用備品 |
+| equipmentTypeOptions | `List<SearchAdminEquipmentQueryService.Option>` | ○ | 備品種別マスタから取得した検索条件プルダウン候補 |
+| statusOptions | `List<SearchAdminEquipmentQueryService.Option>` | ○ | 検索条件プルダウンに表示する備品状態候補 |
 | hasMoreThanLimit | boolean | ○ | 件数上限超過有無 |
 
 ## 8. 例外マッピング方針

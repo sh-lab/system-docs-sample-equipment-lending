@@ -1,5 +1,6 @@
-package net.shlab.hogefugapiyo.equipmentlending.presentation;
+package net.shlab.hogefugapiyo.equipmentlending.presentation.controller;
 
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import net.shlab.hogefugapiyo.equipmentlending.application.BusinessException;
 import net.shlab.hogefugapiyo.equipmentlending.application.BusinessMessageIds;
@@ -10,6 +11,7 @@ import net.shlab.hogefugapiyo.equipmentlending.application.query.FindAdminEquipm
 import net.shlab.hogefugapiyo.equipmentlending.presentation.form.AdminEquipmentRegisterForm;
 import net.shlab.hogefugapiyo.equipmentlending.presentation.form.AdminEquipmentUpdateForm;
 import net.shlab.hogefugapiyo.equipmentlending.presentation.route.RoutePaths;
+import net.shlab.hogefugapiyo.equipmentlending.presentation.token.OneTimeTokenScopes;
 import net.shlab.hogefugapiyo.equipmentlending.presentation.views.Views;
 import net.shlab.hogefugapiyo.equipmentlending.presentation.controller.AbstractBaseController;
 import net.shlab.hogefugapiyo.framework.i18n.I18nMessageResolver;
@@ -47,13 +49,14 @@ public class HfpElV700AdminEquipmentEditController extends AbstractBaseControlle
     @GetMapping(RoutePaths.HFP_ELV700_ADMIN_EQUIPMENT_EDIT)
     public String show(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
+            HttpSession session,
             Model model,
             @RequestParam(value = "mode", required = false, defaultValue = "edit") String mode,
             @RequestParam(value = "equipmentId", required = false) Long equipmentId,
             @RequestParam(value = "errorMessageId", required = false) String errorMessageId
     ) {
         try {
-            populateModel(model, initApplicationService.initialize(normalizeMode(mode), equipmentId), null, resolveMessage(errorMessageId));
+            populateModel(model, session, initApplicationService.initialize(normalizeMode(mode), equipmentId), null, resolveMessage(errorMessageId));
             return Views.HFP_ELV700_ADMIN_EQUIPMENT_EDIT;
         } catch (BusinessException ex) {
             return redirectWithError(RoutePaths.HFP_ELV600_ADMIN_EQUIPMENT_SEARCH, ex.messageId());
@@ -63,13 +66,14 @@ public class HfpElV700AdminEquipmentEditController extends AbstractBaseControlle
     @PostMapping(RoutePaths.HFP_ELV700_ADMIN_EQUIPMENT_EDIT_REGISTER)
     public String register(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
+            HttpSession session,
             Model model,
             @Valid @ModelAttribute("createForm") AdminEquipmentRegisterForm form,
             BindingResult bindingResult
     ) {
         if (bindingResult.hasErrors()) {
             FindAdminEquipmentEditQueryService.Response viewData = initApplicationService.initialize("create", null);
-            populateModel(model, viewData, null, null);
+            populateModel(model, session, viewData, null, null);
             ValidationErrorSupport.populate(model, bindingResult);
             applyCreateInput(model, form);
             return Views.HFP_ELV700_ADMIN_EQUIPMENT_EDIT;
@@ -86,7 +90,7 @@ public class HfpElV700AdminEquipmentEditController extends AbstractBaseControlle
             return redirectWithMessage(RoutePaths.HFP_ELV600_ADMIN_EQUIPMENT_SEARCH, BusinessMessageIds.EQUIPMENT_REGISTER_COMPLETED);
         } catch (BusinessException ex) {
             FindAdminEquipmentEditQueryService.Response viewData = initApplicationService.initialize("create", null);
-            populateModel(model, viewData, null, resolveMessage(ex.messageId()));
+            populateModel(model, session, viewData, null, resolveMessage(ex.messageId()));
             applyCreateInput(model, form);
             return Views.HFP_ELV700_ADMIN_EQUIPMENT_EDIT;
         }
@@ -95,6 +99,7 @@ public class HfpElV700AdminEquipmentEditController extends AbstractBaseControlle
     @PostMapping(RoutePaths.HFP_ELV700_ADMIN_EQUIPMENT_EDIT_UPDATE)
     public String update(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
+            HttpSession session,
             Model model,
             @Valid @ModelAttribute("updateForm") AdminEquipmentUpdateForm form,
             BindingResult bindingResult
@@ -105,7 +110,7 @@ public class HfpElV700AdminEquipmentEditController extends AbstractBaseControlle
             }
             try {
                 FindAdminEquipmentEditQueryService.Response viewData = initApplicationService.initialize("edit", form.getEquipmentId());
-                populateModel(model, viewData, null, null);
+                populateModel(model, session, viewData, null, null);
                 ValidationErrorSupport.populate(model, bindingResult);
                 applyUpdateInput(model, form);
                 return Views.HFP_ELV700_ADMIN_EQUIPMENT_EDIT;
@@ -126,7 +131,7 @@ public class HfpElV700AdminEquipmentEditController extends AbstractBaseControlle
         } catch (BusinessException ex) {
             try {
                 FindAdminEquipmentEditQueryService.Response viewData = initApplicationService.initialize("edit", form.getEquipmentId());
-                populateModel(model, viewData, null, resolveMessage(ex.messageId()));
+                populateModel(model, session, viewData, null, resolveMessage(ex.messageId()));
                 applyUpdateInput(model, form);
                 return Views.HFP_ELV700_ADMIN_EQUIPMENT_EDIT;
             } catch (BusinessException nested) {
@@ -135,7 +140,7 @@ public class HfpElV700AdminEquipmentEditController extends AbstractBaseControlle
         }
     }
 
-    private void populateModel(Model model, FindAdminEquipmentEditQueryService.Response viewData, String infoMessage, String errorMessage) {
+    private void populateModel(Model model, HttpSession session, FindAdminEquipmentEditQueryService.Response viewData, String infoMessage, String errorMessage) {
         model.addAttribute("viewData", viewData);
         model.addAttribute("isCreateMode", "create".equals(viewData.mode()));
         model.addAttribute("isEditMode", "edit".equals(viewData.mode()));
@@ -143,6 +148,8 @@ public class HfpElV700AdminEquipmentEditController extends AbstractBaseControlle
         model.addAttribute("statusOptions", viewData.statusOptions());
         model.addAttribute("infoMessage", infoMessage);
         model.addAttribute("errorMessage", errorMessage);
+        issueOneTimeToken(model, session, "registerToken", OneTimeTokenScopes.V700_REGISTER);
+        issueOneTimeToken(model, session, "updateToken", OneTimeTokenScopes.V700_UPDATE);
     }
 
     private String normalizeMode(String mode) {

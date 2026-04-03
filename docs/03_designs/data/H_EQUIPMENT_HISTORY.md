@@ -14,8 +14,8 @@
 ---
 
 ## 2. 目的・概要
-- 本テーブルは、`M_EQUIPMENT` に対する状態変更操作の履歴を `operationId` 単位で追跡するための履歴テーブルである。
-- 1 回のコマンドサービス実行で備品状態の変更が確定した場合、対象備品 1 件につき 1 行を追加する。
+- 本テーブルは、`M_EQUIPMENT` に対するコマンド実行の履歴を `operationId` 単位で追跡するための履歴テーブルである。
+- 1 回のコマンドサービス実行で備品に対する登録または更新が確定した場合、対象備品 1 件につき 1 行を追加する。
 - 業務的な意味、不変条件、状態遷移は `docs/03_designs/entity/HFP-EL-E001_equipment.md` を参照する。
 
 ---
@@ -32,7 +32,7 @@
 | 論理名 | 物理名 | データ型 | NOT NULL | 主キー | 初期値 | 説明 |
 |--------|--------|----------|----------|--------|--------|------|
 | 操作ID | OPERATION_ID | CHAR(36) | ○ | PK | - | Application Service 呼び出し単位で framework 共通部が設定する UUID |
-| 備品ID | EQUIPMENT_ID | BIGINT | ○ | PK | - | 状態変更が確定した備品の主キー |
+| 備品ID | EQUIPMENT_ID | BIGINT | ○ | PK | - | コマンド実行対象となった備品の主キー |
 | コマンドサービスID | COMMAND_SERVICE_ID | VARCHAR(64) | ○ | - | - | 履歴登録を行ったコマンドサービスの設計ID |
 | 操作時刻 | OPERATED_AT | TIMESTAMP | ○ | - | - | 当該 `operationId` の履歴登録処理で使用した時刻 |
 
@@ -92,7 +92,7 @@
 - 同一業務操作で複数備品を更新する場合は、同一 `operationId` で対象件数分の行を追加する。
 - 同一業務操作内で同一備品を複数回更新した場合でも、履歴登録は変更確定後の備品単位で 1 行とする。
 - `COMMAND_SERVICE_ID` には `HFP-EL-SCS001_register-lending-request_service`、`HFP-EL-SCS010_approve-lending-request_service`、`HFP-EL-SCS011_reject-lending-request_service`、`HFP-EL-SCS012_return-confirm_service`、`HFP-EL-SCS013_register-equipment_service`、`HFP-EL-SCS014_update-equipment-info_service` のいずれかの設計IDを保持する。
-- 本テーブルは状態コードそのものの履歴スナップショットを保持せず、どのコマンドサービスがどの備品をいつ更新したかを追跡するために用いる。
+- 本テーブルは状態コードそのものの履歴スナップショットを保持せず、どのコマンドサービスがどの備品に対していつ登録または更新を行ったかを追跡するために用いる。
 
 ---
 

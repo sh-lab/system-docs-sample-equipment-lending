@@ -1,4 +1,4 @@
-package net.shlab.hogefugapiyo.equipmentlending.presentation;
+package net.shlab.hogefugapiyo.equipmentlending.presentation.controller;
 
 import net.shlab.hogefugapiyo.equipmentlending.application.query.FindUserMypageQueryService;
 import net.shlab.hogefugapiyo.equipmentlending.application.HfpElSas101UserMypageInitApplicationService;

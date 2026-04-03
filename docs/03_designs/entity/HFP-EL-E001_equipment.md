@@ -130,16 +130,12 @@
 - 備品状態の直接更新は、対応するユースケースの前提条件・状態遷移に従わなければならない。
 - 備品エンティティは単独の明細要素を持たない。
 - 備品種別マスタ自体の更新は、本エンティティの責務に含めない。
-- 実装上の備品エンティティは `src/main/java/net/shlab/hogefugapiyo/equipmentlending/model/entity/Equipment.java` に配置する。
-- 実装クラスは `AuditVersionEntity` を継承する通常クラスとして定義し、`record` は用いない。
-- 備品状態は `src/main/java/net/shlab/hogefugapiyo/equipmentlending/model/value/EquipmentStatus.java` の enum で表現する。
-- 備品用 Entity Repository は Spring Data JPA および `EntityManager` を用いて実装する。
+- 備品状態は、定義済みの状態コード体系に基づいて一貫して管理する。
 
 ---
 
 ## 10. 監査・バージョニング
 - 監査情報はシステムが自動設定する。
-- 併存更新は JPA の `@Version` による楽観ロックで制御する。
+- 併存更新は楽観ロックで制御する。
 - 状態変更が正常終了した場合の操作履歴は `H_EQUIPMENT_HISTORY` に記録する。
 - 操作履歴はエンティティ本体の業務属性ではなく、`operationId` 単位の追跡情報として別テーブルで管理する。
-- 永続化は `EntityRepository` を継承した備品用 Repository を通じて行う。

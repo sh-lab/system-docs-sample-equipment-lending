@@ -1,4 +1,4 @@
-package net.shlab.hogefugapiyo.equipmentlending.presentation;
+package net.shlab.hogefugapiyo.equipmentlending.presentation.controller;
 
 import jakarta.validation.Valid;
 import net.shlab.hogefugapiyo.equipmentlending.application.query.FindLoginUserQueryService;

@@ -21,8 +21,9 @@
 
     <section class="business-section">
         <h2 class="business-section__title" th:text="#{screen.elv700.basic-information}">basic</h2>
-        <form method="post" th:if="${isCreateMode}" th:action="@{/hfp-elv700-admin-equipment-edit/register}">
+        <form method="post" th:if="${isCreateMode}" th:action="@{/hfp-elv700-admin-equipment-edit/register}" data-prevent-double-submit="true">
             <input th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" type="hidden">
+            <input name="oneTimeToken" th:value="${registerToken}" type="hidden">
             <dl class="business-summary-grid">
                 <div>
                     <dt th:text="#{label.equipment-code}">code</dt>
@@ -72,8 +73,9 @@
         </form>
 
         <div th:if="${isEditMode}">
-            <form method="post" th:action="@{/hfp-elv700-admin-equipment-edit/update}">
+            <form method="post" th:action="@{/hfp-elv700-admin-equipment-edit/update}" data-prevent-double-submit="true">
                 <input th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" type="hidden">
+                <input name="oneTimeToken" th:value="${updateToken}" type="hidden">
                 <input type="hidden" name="equipmentId" th:value="${viewData.equipmentDetail().equipmentId()}">
                 <input type="hidden" name="version" th:value="${viewData.equipmentDetail().version()}">
                 <dl class="business-summary-grid">

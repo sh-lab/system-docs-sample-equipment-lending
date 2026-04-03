@@ -14,7 +14,7 @@
 ---
 
 ## 2. 目的・概要
-- 本テーブルは、`T_LENDING_REQUEST_DETAIL` に対する登録操作の履歴を `operationId` 単位で追跡するための履歴テーブルである。
+- 本テーブルは、`T_LENDING_REQUEST_DETAIL` に対するコマンド実行の履歴を `operationId` 単位で追跡するための履歴テーブルである。
 - 1 回のコマンドサービス実行で明細が登録された場合、対象明細 1 行につき 1 行を追加する。
 - 業務的な意味、不変条件、状態遷移は `docs/03_designs/entity/HFP-EL-E003_lending-request.md` を参照する。
 

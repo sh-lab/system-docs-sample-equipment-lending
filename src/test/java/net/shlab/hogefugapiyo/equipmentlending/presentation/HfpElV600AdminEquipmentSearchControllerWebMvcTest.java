@@ -6,6 +6,7 @@ import net.shlab.hogefugapiyo.equipmentlending.application.HfpElSas601AdminEquip
 import net.shlab.hogefugapiyo.equipmentlending.application.HfpElSas602SearchAdminEquipmentApplicationService;
 import net.shlab.hogefugapiyo.equipmentlending.application.query.SearchAdminEquipmentQueryService;
 import net.shlab.hogefugapiyo.equipmentlending.model.value.UserRole;
+import net.shlab.hogefugapiyo.equipmentlending.presentation.controller.HfpElV600AdminEquipmentSearchController;
 import net.shlab.hogefugapiyo.equipmentlending.presentation.route.RoutePaths;
 import net.shlab.hogefugapiyo.framework.i18n.I18nMessageResolver;
 import net.shlab.hogefugapiyo.equipmentlending.infrastructure.security.config.SecurityConfiguration;
@@ -62,15 +63,31 @@ class HfpElV600AdminEquipmentSearchControllerWebMvcTest {
     }
 
     @Test
-    void searchParsesSystemRegisteredDate() throws Exception {
-        given(searchApplicationService.search("長机", "DESK", "AVAILABLE", LocalDate.of(2026, 1, 1)))
+    void searchParsesSystemRegisteredDateRange() throws Exception {
+        given(searchApplicationService.search("長机", "DESK", "AVAILABLE", LocalDate.of(2026, 1, 1), LocalDate.of(2026, 1, 31)))
                 .willReturn(response());
 
         mockMvc.perform(get(RoutePaths.HFP_ELV600_ADMIN_EQUIPMENT_SEARCH)
                         .param("equipmentName", "長机")
                         .param("equipmentType", "DESK")
                         .param("statusCode", "AVAILABLE")
-                        .param("systemRegisteredDate", "2026-01-01")
+                        .param("systemRegisteredDateFrom", "2026-01-01")
+                        .param("systemRegisteredDateTo", "2026-01-31")
+                        .with(userPrincipal("ADMIN1", UserRole.ADMIN)))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("2026-01-01")));
+    }
+
+    @Test
+    void searchAcceptsOnlySystemRegisteredDateFrom() throws Exception {
+        given(searchApplicationService.search("長机", "DESK", "AVAILABLE", LocalDate.of(2026, 1, 1), null))
+                .willReturn(response());
+
+        mockMvc.perform(get(RoutePaths.HFP_ELV600_ADMIN_EQUIPMENT_SEARCH)
+                        .param("equipmentName", "長机")
+                        .param("equipmentType", "DESK")
+                        .param("statusCode", "AVAILABLE")
+                        .param("systemRegisteredDateFrom", "2026-01-01")
                         .with(userPrincipal("ADMIN1", UserRole.ADMIN)))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("2026-01-01")));

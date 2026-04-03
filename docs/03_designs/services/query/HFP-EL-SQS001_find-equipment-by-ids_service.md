@@ -34,7 +34,7 @@
 ### 4.2 出力
 | 項目名 | 型 | 必須 | 説明 |
 |--------|----|------|------|
-| equipments | `FindEquipmentByIdsQueryServiceImpl.Response` | ○ | 取得した備品情報一覧（`items` フィールドに格納） |
+| equipments | `FindEquipmentByIdsQueryService.Response` | ○ | 取得した備品情報一覧（`items` フィールドに格納） |
 
 ---
 
@@ -81,6 +81,6 @@
 - 本サービスは備品取得のみを担当し、件数不足・状態不正・重複可否の業務判断は利用元で行う。
 - 関連アプリケーションサービス：`貸出申請開始サービス(SAS303)`、`貸出申請サービス(SAS402)`、`利用者貸出申請・返却画面初期表示サービス(SAS401)`
 - 関連エンティティ：`HFP-EL-E001_equipment`
-- Query Service は Entity をそのまま返さず、`FindEquipmentByIdsQueryServiceImpl.EquipmentItem` へ変換し、`FindEquipmentByIdsQueryServiceImpl.Response` に内包して返却する。
+- Query Service は Entity をそのまま返さず、`FindEquipmentByIdsQueryService.EquipmentItem` へ変換し、`FindEquipmentByIdsQueryService.Response` に内包して返却する。
 
 ---

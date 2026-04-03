@@ -23,7 +23,8 @@ public class AdminEquipmentSearchQueryRepositoryImpl implements AdminEquipmentSe
         String equipmentNameLike = "%" + escapeLike(criteria.equipmentName()) + "%";
         boolean hasType = criteria.equipmentType() != null && !criteria.equipmentType().isBlank();
         boolean hasStatus = criteria.statusCode() != null && !criteria.statusCode().isBlank() && !"ALL".equals(criteria.statusCode());
-        boolean hasDate = criteria.systemRegisteredDate() != null;
+        boolean hasDateFrom = criteria.systemRegisteredDateFrom() != null;
+        boolean hasDateTo = criteria.systemRegisteredDateTo() != null;
         return jdbcTemplate.query(
                 """
                 SELECT e.EQUIPMENT_ID, e.EQUIPMENT_CODE, e.EQUIPMENT_NAME, e.EQUIPMENT_TYPE,
@@ -31,12 +32,13 @@ public class AdminEquipmentSearchQueryRepositoryImpl implements AdminEquipmentSe
                        e.STATUS_CODE, e.VERSION
                   FROM M_EQUIPMENT e
                   JOIN M_EQUIPMENT_TYPE t ON t.EQUIPMENT_TYPE_CODE = e.EQUIPMENT_TYPE
-                 WHERE UPPER(e.EQUIPMENT_NAME) LIKE UPPER(?) ESCAPE '\\'
-                   AND (? = FALSE OR e.EQUIPMENT_TYPE = ?)
-                   AND (? = FALSE OR e.STATUS_CODE = ?)
-                   AND (? = FALSE OR e.SYSTEM_REGISTERED_DATE = ?)
-                 ORDER BY e.EQUIPMENT_CODE ASC
-                 LIMIT ?
+                  WHERE UPPER(e.EQUIPMENT_NAME) LIKE UPPER(?) ESCAPE '\\'
+                    AND (? = FALSE OR e.EQUIPMENT_TYPE = ?)
+                    AND (? = FALSE OR e.STATUS_CODE = ?)
+                    AND (? = FALSE OR e.SYSTEM_REGISTERED_DATE >= ?)
+                    AND (? = FALSE OR e.SYSTEM_REGISTERED_DATE <= ?)
+                  ORDER BY e.EQUIPMENT_CODE ASC
+                  LIMIT ?
                 """,
                 (rs, rowNum) -> toRow(rs),
                 equipmentNameLike,
@@ -44,8 +46,10 @@ public class AdminEquipmentSearchQueryRepositoryImpl implements AdminEquipmentSe
                 criteria.equipmentType(),
                 hasStatus,
                 criteria.statusCode(),
-                hasDate,
-                criteria.systemRegisteredDate(),
+                hasDateFrom,
+                criteria.systemRegisteredDateFrom(),
+                hasDateTo,
+                criteria.systemRegisteredDateTo(),
                 FETCH_LIMIT_WITH_SENTINEL
         );
     }

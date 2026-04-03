@@ -6,7 +6,13 @@ import net.shlab.hogefugapiyo.framework.core.service.QueryService;
 
 public interface SearchAdminEquipmentQueryService extends QueryService<SearchAdminEquipmentQueryService.Request, SearchAdminEquipmentQueryService.Response> {
 
-    record Request(String equipmentName, String equipmentType, String statusCode, LocalDate systemRegisteredDate) {
+    record Request(
+            String equipmentName,
+            String equipmentType,
+            String statusCode,
+            LocalDate systemRegisteredDateFrom,
+            LocalDate systemRegisteredDateTo
+    ) {
     }
 
     record EquipmentItem(long equipmentId, String equipmentCode, String equipmentName,

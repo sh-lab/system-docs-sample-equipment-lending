@@ -9,9 +9,13 @@ import net.shlab.hogefugapiyo.equipmentlending.application.HfpElSas404RejectedRe
 import net.shlab.hogefugapiyo.equipmentlending.application.query.LendingRequestScreenMode;
 import net.shlab.hogefugapiyo.equipmentlending.application.query.UserLendingRequestEquipmentDto;
 import net.shlab.hogefugapiyo.equipmentlending.application.query.UserLendingRequestViewData;
+import net.shlab.hogefugapiyo.equipmentlending.presentation.controller.HfpElV400UserLendingRequestController;
 import net.shlab.hogefugapiyo.equipmentlending.presentation.route.RoutePaths;
 import net.shlab.hogefugapiyo.equipmentlending.model.value.UserRole;
 import net.shlab.hogefugapiyo.equipmentlending.infrastructure.security.config.SecurityConfiguration;
+import net.shlab.hogefugapiyo.equipmentlending.presentation.config.PresentationWebMvcConfiguration;
+import net.shlab.hogefugapiyo.equipmentlending.presentation.token.OneTimeTokenScopes;
+import net.shlab.hogefugapiyo.framework.web.OneTimeTokenSupport;
 import net.shlab.hogefugapiyo.framework.i18n.I18nMessageResolver;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +23,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.mock.web.MockHttpSession;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -34,7 +39,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(HfpElV400UserLendingRequestController.class)
-@Import(SecurityConfiguration.class)
+@Import({SecurityConfiguration.class, PresentationWebMvcConfiguration.class})
 class HfpElV400UserLendingRequestControllerWebMvcTest {
 
     @Autowired
@@ -74,11 +79,14 @@ class HfpElV400UserLendingRequestControllerWebMvcTest {
     @Test
     void lendingPostRedirectsToMypageOnSuccess() throws Exception {
         doNothing().when(lendingRequestApplicationService).register("USER01", List.of(1001L, 1004L), "会議で利用する。");
+        MockHttpSession session = sessionWithToken(OneTimeTokenScopes.V400_LENDING);
 
         mockMvc.perform(post(RoutePaths.HFP_ELV400_USER_LENDING_REQUEST_LENDING)
+                        .session(session)
                         .with(csrf())
                         .with(userPrincipal("USER01", UserRole.USER))
                         .param("equipmentIds", "1001", "1004")
+                        .param("oneTimeToken", token(session, OneTimeTokenScopes.V400_LENDING))
                         .param("requestComment", "会議で利用する。"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl(RoutePaths.HFP_ELV100_USER_MYPAGE + "?messageId=MSG_I_002"));
@@ -93,12 +101,15 @@ class HfpElV400UserLendingRequestControllerWebMvcTest {
                 .willReturn(returnViewData());
         given(i18nMessageResolver.getBusinessMessage("MSG_E_002"))
                 .willReturn("[MSG_E_002]返却申請を更新できませんでした。最新の状態を確認してください。");
+        MockHttpSession session = sessionWithToken(OneTimeTokenScopes.V400_RETURN);
 
         mockMvc.perform(post(RoutePaths.HFP_ELV400_USER_LENDING_REQUEST_RETURN)
+                        .session(session)
                         .with(csrf())
                         .with(userPrincipal("USER02", UserRole.USER))
                         .param("requestId", "2002")
                         .param("version", "1")
+                        .param("oneTimeToken", token(session, OneTimeTokenScopes.V400_RETURN))
                         .param("returnRequestComment", "返却しました。"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("[MSG_E_002]返却申請を更新できませんでした。最新の状態を確認してください。")))
@@ -110,11 +121,14 @@ class HfpElV400UserLendingRequestControllerWebMvcTest {
     void lendingPostWithTooLongCommentRedisplaysSamePage() throws Exception {
         given(initializeApplicationService.initialize("USER01", "V300", null, List.of(1001L, 1004L)))
                 .willReturn(lendingViewData());
+        MockHttpSession session = sessionWithToken(OneTimeTokenScopes.V400_LENDING);
 
         mockMvc.perform(post(RoutePaths.HFP_ELV400_USER_LENDING_REQUEST_LENDING)
+                        .session(session)
                         .with(csrf())
                         .with(userPrincipal("USER01", UserRole.USER))
                         .param("equipmentIds", "1001", "1004")
+                        .param("oneTimeToken", token(session, OneTimeTokenScopes.V400_LENDING))
                         .param("requestComment", "a".repeat(501)))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("申請コメントは500文字以内で入力してください。")))
@@ -123,13 +137,27 @@ class HfpElV400UserLendingRequestControllerWebMvcTest {
 
     @Test
     void returnPostWithoutRequestIdRedirectsToMypage() throws Exception {
+        MockHttpSession session = sessionWithToken(OneTimeTokenScopes.V400_RETURN);
+
         mockMvc.perform(post(RoutePaths.HFP_ELV400_USER_LENDING_REQUEST_RETURN)
+                        .session(session)
                         .with(csrf())
                         .with(userPrincipal("USER02", UserRole.USER))
                         .param("version", "1")
+                        .param("oneTimeToken", token(session, OneTimeTokenScopes.V400_RETURN))
                         .param("returnRequestComment", "返却しました。"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl(RoutePaths.HFP_ELV100_USER_MYPAGE + "?errorMessageId=MSG_E_004"));
+    }
+
+    private MockHttpSession sessionWithToken(String scope) {
+        MockHttpSession session = new MockHttpSession();
+        OneTimeTokenSupport.issueToken(session, scope);
+        return session;
+    }
+
+    private String token(MockHttpSession session, String scope) {
+        return OneTimeTokenSupport.issueToken(session, scope);
     }
 
     private UserLendingRequestViewData lendingViewData() {

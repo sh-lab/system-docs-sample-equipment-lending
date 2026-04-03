@@ -6,5 +6,5 @@ import net.shlab.hogefugapiyo.framework.core.service.ApplicationService;
 
 public interface HfpElSas602SearchAdminEquipmentApplicationService extends ApplicationService {
 
-    SearchAdminEquipmentQueryService.Response search(String equipmentName, String equipmentType, String statusCode, LocalDate systemRegisteredDate);
+    SearchAdminEquipmentQueryService.Response search(String equipmentName, String equipmentType, String statusCode, LocalDate systemRegisteredDateFrom, LocalDate systemRegisteredDateTo);
 }

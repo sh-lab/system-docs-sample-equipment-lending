@@ -50,8 +50,8 @@
 ### 6.1 一覧 DTO
 | 項目名 | 型 | 必須 | 説明 |
 |--------|----|------|------|
-| pendingApprovalRequests | `List<FindAdminMypageQueryServiceImpl.RequestItem>` | ○ | 承認待ち申請一覧 |
-| pendingReturnRequests | `List<FindAdminMypageQueryServiceImpl.RequestItem>` | ○ | 返却確認待ち申請一覧 |
+| pendingApprovalRequests | `List<FindAdminMypageQueryService.RequestItem>` | ○ | 承認待ち申請一覧 |
+| pendingReturnRequests | `List<FindAdminMypageQueryService.RequestItem>` | ○ | 返却確認待ち申請一覧 |
 
 ### 6.2 明細 DTO
 | 項目名 | 型 | 必須 | 説明 |

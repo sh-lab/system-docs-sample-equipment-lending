@@ -135,24 +135,17 @@
 
 ## 9. 操作・設計上の制約
 - 貸出申請本体および貸出申請明細の生成・更新・削除は、アプリケーションサービス経由でのみ行う。
-- 貸出申請明細単体の Repository / Service は作成しない。
 - 永続化は貸出申請エンティティ単位で行う。
 - 備品状態の変更は、貸出申請状態の変更と整合していなければならない。
-- 実装上の貸出申請エンティティは `src/main/java/net/shlab/hogefugapiyo/equipmentlending/model/entity/LendingRequest.java` に配置する。
-- 実装クラスは `AuditVersionEntity` を継承する通常クラスとして定義し、`record` は用いない。
-- 申請状態は `src/main/java/net/shlab/hogefugapiyo/equipmentlending/model/value/LendingRequestStatus.java` の enum で表現する。
-- 明細の正データは `T_LENDING_REQUEST_DETAIL` として永続化し、履歴 record とは分離する。
-- 貸出申請用 Entity Repository は Spring Data JPA および `EntityManager` を用いて実装し、
-  本体と明細を同一エンティティ境界で扱う。
+- 明細の正データは `T_LENDING_REQUEST_DETAIL` として永続化し、履歴データとは分離する。
+- 本体と明細は同一エンティティ境界で扱う。
 - 貸出申請ID の採番は、`T_LENDING_REQUEST` 用に定義したデータベースシーケンスを用いて行う。
 
 ---
 
 ## 10. 監査・バージョニング
 - 監査情報はシステムが自動設定する。
-- 併存更新は JPA の `@Version` による楽観ロックで制御する。
+- 併存更新は楽観ロックで制御する。
 - 本体の状態変更が正常終了した場合の操作履歴は `H_LENDING_REQUEST_HISTORY` に記録する。
 - 明細の登録履歴は `H_LENDING_REQUEST_DETAIL_HISTORY` に記録し、貸出申請エンティティの業務属性には含めない。
 - 操作履歴は `operationId` 単位の追跡情報であり、エンティティ本体や明細の状態を復元するための正データとしては扱わない。
-- 履歴 record は `src/main/java/net/shlab/hogefugapiyo/equipmentlending/model/history` 配下に配置する。
-- 永続化は `EntityRepository` を継承した貸出申請用 Repository を通じて行う。

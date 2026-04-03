@@ -52,8 +52,8 @@
 ### 7.2 出力DTO
 | 項目 | 型 | 必須 | 説明 |
 |-----|----|-----|-----|
-| pendingApprovalRequests | `List<FindAdminMypageQueryServiceImpl.RequestItem>` | ○ | 承認待ち申請一覧 |
-| pendingReturnRequests | `List<FindAdminMypageQueryServiceImpl.RequestItem>` | ○ | 返却確認待ち申請一覧 |
+| pendingApprovalRequests | `List<FindAdminMypageQueryService.RequestItem>` | ○ | 承認待ち申請一覧 |
+| pendingReturnRequests | `List<FindAdminMypageQueryService.RequestItem>` | ○ | 返却確認待ち申請一覧 |
 
 ## 8. 例外マッピング方針
 - 業務例外：管理者権限を前提とするため、権限不整合は認可エラーとして上位層で扱う。

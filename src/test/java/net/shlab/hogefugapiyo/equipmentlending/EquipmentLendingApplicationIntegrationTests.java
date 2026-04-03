@@ -3,6 +3,9 @@ package net.shlab.hogefugapiyo.equipmentlending;
 import jakarta.persistence.EntityManager;
 import java.time.Clock;
 import java.time.Instant;
+import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import net.shlab.hogefugapiyo.equipmentlending.presentation.route.RoutePaths;
 import net.shlab.hogefugapiyo.equipmentlending.model.value.UserRole;
 import net.shlab.hogefugapiyo.framework.core.time.CurrentTimeProvider;
@@ -11,12 +14,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static net.shlab.hogefugapiyo.framework.security.SecurityMockMvcTestSupport.userPrincipal;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
@@ -99,13 +106,62 @@ class EquipmentLendingApplicationIntegrationTests {
                 .andExpect(status().isForbidden());
     }
 
+    @Test
+    void invalidOneTimeTokenOnV400RedirectsToDuplicateSubmitErrorScreen() throws Exception {
+        mockMvc.perform(post(RoutePaths.HFP_ELV400_USER_LENDING_REQUEST_LENDING)
+                        .with(csrf())
+                        .param("equipmentIds", "1009", "1010")
+                        .param("oneTimeToken", "invalid-token")
+                        .param("requestComment", "社内会議で利用する。")
+                        .with(userPrincipal("USER01", UserRole.USER)))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl(RoutePaths.DUPLICATE_SUBMIT_ERROR));
+    }
+
+    @Test
+    void invalidOneTimeTokenOnV500RedirectsToDuplicateSubmitErrorScreen() throws Exception {
+        mockMvc.perform(post(RoutePaths.HFP_ELV500_ADMIN_LENDING_REVIEW_APPROVE)
+                        .with(csrf())
+                        .param("requestId", "2001")
+                        .param("version", "0")
+                        .param("oneTimeToken", "invalid-token")
+                        .param("reviewComment", "承認する。")
+                        .with(userPrincipal("ADMIN1", UserRole.ADMIN)))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl(RoutePaths.DUPLICATE_SUBMIT_ERROR));
+    }
+
+    @Test
+    void invalidOneTimeTokenOnV700RedirectsToDuplicateSubmitErrorScreen() throws Exception {
+        mockMvc.perform(post(RoutePaths.HFP_ELV700_ADMIN_EQUIPMENT_EDIT_UPDATE)
+                        .with(csrf())
+                        .param("equipmentId", "1009")
+                        .param("equipmentName", "更新後のプロジェクター")
+                        .param("statusCode", "UNAVAILABLE")
+                        .param("remarks", "棚卸し対象")
+                        .param("oneTimeToken", "invalid-token")
+                        .param("version", "0")
+                        .with(userPrincipal("ADMIN1", UserRole.ADMIN)))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl(RoutePaths.DUPLICATE_SUBMIT_ERROR));
+    }
+
 
     @Test
     @Transactional
     void userCanRegisterLendingRequestFromV400() throws Exception {
+        SubmissionPreparation preparation = prepareSubmission(
+                RoutePaths.HFP_ELV400_USER_LENDING_REQUEST,
+                "USER01",
+                UserRole.USER,
+                builder -> builder.param("from", "V300").param("equipmentIds", "1009", "1010")
+        );
+
         mockMvc.perform(post(RoutePaths.HFP_ELV400_USER_LENDING_REQUEST_LENDING)
+                        .session(preparation.session())
                         .with(csrf())
                         .param("equipmentIds", "1009", "1010")
+                        .param("oneTimeToken", preparation.token())
                         .param("requestComment", "社内会議で利用する。")
                         .with(userPrincipal("USER01", UserRole.USER)))
                 .andExpect(status().is3xxRedirection())
@@ -131,10 +187,19 @@ class EquipmentLendingApplicationIntegrationTests {
     @Test
     @Transactional
     void userCanRegisterReturnRequestFromV400() throws Exception {
+        SubmissionPreparation preparation = prepareSubmission(
+                RoutePaths.HFP_ELV400_USER_LENDING_REQUEST,
+                "USER02",
+                UserRole.USER,
+                builder -> builder.param("from", "V100").param("requestId", "2002")
+        );
+
         mockMvc.perform(post(RoutePaths.HFP_ELV400_USER_LENDING_REQUEST_RETURN)
+                        .session(preparation.session())
                         .with(csrf())
                         .param("requestId", "2002")
                         .param("version", "1")
+                        .param("oneTimeToken", preparation.token())
                         .param("returnRequestComment", "返却しました。")
                         .with(userPrincipal("USER02", UserRole.USER)))
                 .andExpect(status().is3xxRedirection())
@@ -156,10 +221,19 @@ class EquipmentLendingApplicationIntegrationTests {
     @Test
     @Transactional
     void userCanConfirmRejectedRequestFromV400() throws Exception {
+        SubmissionPreparation preparation = prepareSubmission(
+                RoutePaths.HFP_ELV400_USER_LENDING_REQUEST,
+                "USER02",
+                UserRole.USER,
+                builder -> builder.param("from", "V100").param("requestId", "2004")
+        );
+
         mockMvc.perform(post(RoutePaths.HFP_ELV400_USER_LENDING_REQUEST_REJECTED_CONFIRM)
+                        .session(preparation.session())
                         .with(csrf())
                         .param("requestId", "2004")
                         .param("version", "1")
+                        .param("oneTimeToken", preparation.token())
                         .with(userPrincipal("USER02", UserRole.USER)))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl(RoutePaths.HFP_ELV100_USER_MYPAGE + "?messageId=MSG_I_004"));
@@ -190,10 +264,19 @@ class EquipmentLendingApplicationIntegrationTests {
     @Test
     @Transactional
     void adminCanApprovePendingApprovalRequestFromV500() throws Exception {
+        SubmissionPreparation preparation = prepareSubmission(
+                RoutePaths.HFP_ELV500_ADMIN_LENDING_REVIEW,
+                "ADMIN1",
+                UserRole.ADMIN,
+                builder -> builder.param("requestId", "2001")
+        );
+
         mockMvc.perform(post(RoutePaths.HFP_ELV500_ADMIN_LENDING_REVIEW_APPROVE)
+                        .session(preparation.session())
                         .with(csrf())
                         .param("requestId", "2001")
                         .param("version", "0")
+                        .param("oneTimeToken", preparation.token())
                         .param("reviewComment", "承認する。")
                         .with(userPrincipal("ADMIN1", UserRole.ADMIN)))
                 .andExpect(status().is3xxRedirection())
@@ -216,10 +299,19 @@ class EquipmentLendingApplicationIntegrationTests {
     @Test
     @Transactional
     void adminCanRejectPendingApprovalRequestFromV500() throws Exception {
+        SubmissionPreparation preparation = prepareSubmission(
+                RoutePaths.HFP_ELV500_ADMIN_LENDING_REVIEW,
+                "ADMIN1",
+                UserRole.ADMIN,
+                builder -> builder.param("requestId", "2001")
+        );
+
         mockMvc.perform(post(RoutePaths.HFP_ELV500_ADMIN_LENDING_REVIEW_REJECT)
+                        .session(preparation.session())
                         .with(csrf())
                         .param("requestId", "2001")
                         .param("version", "0")
+                        .param("oneTimeToken", preparation.token())
                         .param("reviewComment", "今回は却下する。")
                         .with(userPrincipal("ADMIN1", UserRole.ADMIN)))
                 .andExpect(status().is3xxRedirection())
@@ -242,10 +334,19 @@ class EquipmentLendingApplicationIntegrationTests {
     @Test
     @Transactional
     void adminCanConfirmReturnFromV500() throws Exception {
+        SubmissionPreparation preparation = prepareSubmission(
+                RoutePaths.HFP_ELV500_ADMIN_LENDING_REVIEW,
+                "ADMIN1",
+                UserRole.ADMIN,
+                builder -> builder.param("requestId", "2003")
+        );
+
         mockMvc.perform(post(RoutePaths.HFP_ELV500_ADMIN_LENDING_REVIEW_RETURN_CONFIRM)
+                        .session(preparation.session())
                         .with(csrf())
                         .param("requestId", "2003")
                         .param("version", "2")
+                        .param("oneTimeToken", preparation.token())
                         .param("returnConfirmComment", "返却を確認した。")
                         .with(userPrincipal("ADMIN1", UserRole.ADMIN)))
                 .andExpect(status().is3xxRedirection())
@@ -268,12 +369,21 @@ class EquipmentLendingApplicationIntegrationTests {
     @Test
     @Transactional
     void adminCanRegisterEquipmentFromV700() throws Exception {
+        SubmissionPreparation preparation = prepareSubmission(
+                RoutePaths.HFP_ELV700_ADMIN_EQUIPMENT_EDIT,
+                "ADMIN1",
+                UserRole.ADMIN,
+                builder -> builder.param("mode", "create")
+        );
+
         mockMvc.perform(post(RoutePaths.HFP_ELV700_ADMIN_EQUIPMENT_EDIT_REGISTER)
+                        .session(preparation.session())
                         .with(csrf())
                         .param("equipmentName", "追加ライト")
                         .param("equipmentType", "PROJECTOR")
                         .param("storageLocation", "第3倉庫")
                         .param("statusCode", "UNAVAILABLE")
+                        .param("oneTimeToken", preparation.token())
                         .param("remarks", "予備機")
                         .with(userPrincipal("ADMIN1", UserRole.ADMIN)))
                 .andExpect(status().is3xxRedirection())
@@ -291,12 +401,21 @@ class EquipmentLendingApplicationIntegrationTests {
     @Test
     @Transactional
     void adminCanUpdateEquipmentInfoFromV700() throws Exception {
+        SubmissionPreparation preparation = prepareSubmission(
+                RoutePaths.HFP_ELV700_ADMIN_EQUIPMENT_EDIT,
+                "ADMIN1",
+                UserRole.ADMIN,
+                builder -> builder.param("mode", "edit").param("equipmentId", "1009")
+        );
+
         mockMvc.perform(post(RoutePaths.HFP_ELV700_ADMIN_EQUIPMENT_EDIT_UPDATE)
+                        .session(preparation.session())
                         .with(csrf())
                         .param("equipmentId", "1009")
                         .param("equipmentName", "更新後のプロジェクター")
                         .param("statusCode", "UNAVAILABLE")
                         .param("remarks", "棚卸し対象")
+                        .param("oneTimeToken", preparation.token())
                         .param("version", "0")
                         .with(userPrincipal("ADMIN1", UserRole.ADMIN)))
                 .andExpect(status().is3xxRedirection())
@@ -314,12 +433,21 @@ class EquipmentLendingApplicationIntegrationTests {
     @Test
     @Transactional
     void adminCannotUpdatePendingEquipmentFromV700() throws Exception {
+        SubmissionPreparation preparation = prepareSubmission(
+                RoutePaths.HFP_ELV700_ADMIN_EQUIPMENT_EDIT,
+                "ADMIN1",
+                UserRole.ADMIN,
+                builder -> builder.param("mode", "edit").param("equipmentId", "1001")
+        );
+
         mockMvc.perform(post(RoutePaths.HFP_ELV700_ADMIN_EQUIPMENT_EDIT_UPDATE)
+                        .session(preparation.session())
                         .with(csrf())
                         .param("equipmentId", "1001")
                         .param("equipmentName", "更新不可の長机")
                         .param("statusCode", "UNAVAILABLE")
                         .param("remarks", "更新不可")
+                        .param("oneTimeToken", preparation.token())
                         .param("version", "0")
                         .with(userPrincipal("ADMIN1", UserRole.ADMIN)))
                 .andExpect(status().isOk())
@@ -420,6 +548,31 @@ class EquipmentLendingApplicationIntegrationTests {
                 String.class,
                 equipmentId
         );
+    }
+
+    private SubmissionPreparation prepareSubmission(
+            String path,
+            String userId,
+            UserRole userRole,
+            Consumer<MockHttpServletRequestBuilder> customizer
+    ) throws Exception {
+        MockHttpServletRequestBuilder builder = get(path).with(userPrincipal(userId, userRole));
+        customizer.accept(builder);
+        MvcResult result = mockMvc.perform(builder)
+                .andExpect(status().isOk())
+                .andReturn();
+        MockHttpSession session = (MockHttpSession) result.getRequest().getSession(false);
+        String token = extractOneTimeToken(result.getResponse().getContentAsString());
+        return new SubmissionPreparation(session, token);
+    }
+
+    private String extractOneTimeToken(String html) {
+        Matcher matcher = Pattern.compile("<input name=\"oneTimeToken\" value=\"([^\"]+)\" type=\"hidden\">").matcher(html);
+        assertThat(matcher.find()).isTrue();
+        return matcher.group(1);
+    }
+
+    private record SubmissionPreparation(MockHttpSession session, String token) {
     }
 
     private java.sql.Timestamp completedAt(long lendingRequestId) {

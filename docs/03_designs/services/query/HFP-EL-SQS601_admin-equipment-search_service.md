@@ -28,8 +28,9 @@
 |--------|----|------|------------|------|
 | equipmentName | string | 任意 | 部分一致 | 空文字可 |
 | equipmentType | string | 任意 | 完全一致 | 空文字時は全件対象 |
-| equipmentStatus | string | 任意 | 完全一致 | `ALL`、`AVAILABLE`、`PENDING_LENDING`、`LENT`、`UNAVAILABLE`、`DISPOSED` を想定 |
-| systemRegisteredDate | date | 任意 | 完全一致 | `null` 時は全件対象 |
+| statusCode | string | 任意 | 完全一致 | `ALL`、`AVAILABLE`、`PENDING_LENDING`、`LENT`、`UNAVAILABLE`、`DISPOSED` を想定 |
+| systemRegisteredDateFrom | date | 任意 | 以上 | `null` 時は下限条件なし |
+| systemRegisteredDateTo | date | 任意 | 以下 | `null` 時は上限条件なし |
 
 ### 4.2 バリデーション
 - 型・必須の検証は Controller 層で完了している前提とする。
@@ -53,9 +54,9 @@
 ### 6.1 一覧 DTO
 | 項目名 | 型 | 必須 | 説明 |
 |--------|----|------|------|
-| equipmentItems | `List<AdminEquipmentSearchQueryServiceImpl.EquipmentItem>` | ○ | 備品一覧 |
-| equipmentTypeOptions | `List<AdminEquipmentSearchQueryServiceImpl.Option>` | ○ | 備品種別マスタから取得した検索条件プルダウン候補 |
-| equipmentStatusOptions | `List<AdminEquipmentSearchQueryServiceImpl.Option>` | ○ | 検索条件プルダウンに表示する備品状態候補 |
+| equipmentItems | `List<SearchAdminEquipmentQueryService.EquipmentItem>` | ○ | 備品一覧 |
+| equipmentTypeOptions | `List<SearchAdminEquipmentQueryService.Option>` | ○ | 備品種別マスタから取得した検索条件プルダウン候補 |
+| statusOptions | `List<SearchAdminEquipmentQueryService.Option>` | ○ | 検索条件プルダウンに表示する備品状態候補 |
 | hasMoreThanLimit | boolean | ○ | 100 件超過有無 |
 
 ### 6.2 明細 DTO
@@ -64,10 +65,13 @@
 | equipmentId | long | ○ | 備品ID |
 | equipmentCode | string | ○ | 備品管理番号 |
 | equipmentName | string | ○ | 備品名 |
+| equipmentTypeCode | string | ○ | 備品種別コード |
 | equipmentTypeLabel | string | ○ | 備品種別マスタに基づく表示名 |
 | systemRegisteredDate | date | ○ | システム登録日 |
 | storageLocation | string | ○ | 保管場所 |
+| statusCode | string | ○ | 備品状態コード |
 | statusLabel | string | ○ | 状態表示名。`貸出可能`、`貸出申請中`、`貸出中`、`貸出不可`、`廃棄` のいずれか |
+| version | int | ○ | 楽観ロック用バージョン |
 
 ---
 
@@ -115,6 +119,6 @@
 - 関連アプリケーションサービス：`管理者備品検索初期表示サービス(SAS601)`
 - 関連アプリケーションサービス：`管理者備品検索実行サービス(SAS602)`
 - 関連画面：`管理者備品検索画面(V600)`
-- 実装上のインターフェース名：`AdminEquipmentSearchQueryService`
+- 実装上のインターフェース名：`SearchAdminEquipmentQueryService`
 
 ---

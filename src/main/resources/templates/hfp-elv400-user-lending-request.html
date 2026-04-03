@@ -77,8 +77,9 @@
     <section class="business-section">
         <h2 class="business-section__title" th:text="#{screen.elv400.request-comment}">screen.elv400.request-comment</h2>
         <div th:if="${isLendingMode}">
-            <form method="post" th:action="@{/hfp-elv400-user-lending-request/lending}">
+            <form method="post" th:action="@{/hfp-elv400-user-lending-request/lending}" data-prevent-double-submit="true">
                 <input th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" type="hidden">
+                <input name="oneTimeToken" th:value="${lendingToken}" type="hidden">
                 <input name="equipmentIds" th:each="equipmentId : ${viewData.equipmentIds()}" th:value="${equipmentId}" type="hidden">
                 <textarea class="business-textarea" name="requestComment" rows="5" th:text="${requestComment}"></textarea>
                 <p class="business-field-error" th:if="${fieldErrors != null and fieldErrors['requestComment'] != null}" th:text="${fieldErrors['requestComment']}">fieldError</p>
@@ -92,8 +93,9 @@
 
     <section class="business-section" th:if="${isReturnMode}">
         <h2 class="business-section__title" th:text="#{screen.elv400.return-request-comment}">screen.elv400.return-request-comment</h2>
-        <form method="post" th:action="@{/hfp-elv400-user-lending-request/return}">
+        <form method="post" th:action="@{/hfp-elv400-user-lending-request/return}" data-prevent-double-submit="true">
             <input th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" type="hidden">
+            <input name="oneTimeToken" th:value="${returnToken}" type="hidden">
             <input name="requestId" th:value="${viewData.lendingRequestId()}" type="hidden">
             <input name="version" th:value="${viewData.version()}" type="hidden">
             <textarea class="business-textarea" name="returnRequestComment" rows="5" th:readonly="${!viewData.actionEnabled()}" th:text="${returnRequestComment}"></textarea>
@@ -108,8 +110,9 @@
     <section class="business-section" th:if="${isRejectedConfirmMode}">
         <h2 class="business-section__title" th:text="#{screen.elv400.admin-comment}">screen.elv400.admin-comment</h2>
         <p class="business-preformatted" th:text="${viewData.adminComment()}"></p>
-        <form method="post" th:action="@{/hfp-elv400-user-lending-request/rejected-confirm}">
+        <form method="post" th:action="@{/hfp-elv400-user-lending-request/rejected-confirm}" data-prevent-double-submit="true">
             <input th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" type="hidden">
+            <input name="oneTimeToken" th:value="${rejectedConfirmToken}" type="hidden">
             <input name="requestId" th:value="${viewData.lendingRequestId()}" type="hidden">
             <input name="version" th:value="${viewData.version()}" type="hidden">
             <div class="business-action-row business-action-row--right" th:if="${viewData.actionEnabled()}">

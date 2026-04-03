@@ -7,13 +7,18 @@ import net.shlab.hogefugapiyo.equipmentlending.application.HfpElSas702RegisterEq
 import net.shlab.hogefugapiyo.equipmentlending.application.HfpElSas703UpdateEquipmentInfoApplicationService;
 import net.shlab.hogefugapiyo.equipmentlending.application.query.FindAdminEquipmentEditQueryService;
 import net.shlab.hogefugapiyo.equipmentlending.model.value.UserRole;
+import net.shlab.hogefugapiyo.equipmentlending.presentation.controller.HfpElV700AdminEquipmentEditController;
 import net.shlab.hogefugapiyo.equipmentlending.presentation.route.RoutePaths;
 import net.shlab.hogefugapiyo.framework.i18n.I18nMessageResolver;
+import net.shlab.hogefugapiyo.equipmentlending.presentation.config.PresentationWebMvcConfiguration;
+import net.shlab.hogefugapiyo.equipmentlending.presentation.token.OneTimeTokenScopes;
+import net.shlab.hogefugapiyo.framework.web.OneTimeTokenSupport;
 import net.shlab.hogefugapiyo.equipmentlending.infrastructure.security.config.SecurityConfiguration;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -29,7 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(HfpElV700AdminEquipmentEditController.class)
-@Import(SecurityConfiguration.class)
+@Import({SecurityConfiguration.class, PresentationWebMvcConfiguration.class})
 class HfpElV700AdminEquipmentEditControllerWebMvcTest {
 
     @Autowired
@@ -76,14 +81,17 @@ class HfpElV700AdminEquipmentEditControllerWebMvcTest {
     void registerRedirectsToV600OnSuccess() throws Exception {
         doNothing().when(registerApplicationService)
                 .register("ADMIN1", "ライト", "DESK", "第3倉庫", "AVAILABLE", "新規備品");
+        MockHttpSession session = sessionWithToken(OneTimeTokenScopes.V700_REGISTER);
 
         mockMvc.perform(post(RoutePaths.HFP_ELV700_ADMIN_EQUIPMENT_EDIT_REGISTER)
+                        .session(session)
                         .with(csrf())
                         .with(userPrincipal("ADMIN1", UserRole.ADMIN))
                         .param("equipmentName", "ライト")
                         .param("equipmentType", "DESK")
                         .param("storageLocation", "第3倉庫")
                         .param("statusCode", "AVAILABLE")
+                        .param("oneTimeToken", token(session, OneTimeTokenScopes.V700_REGISTER))
                         .param("remarks", "新規備品"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl(RoutePaths.HFP_ELV600_ADMIN_EQUIPMENT_SEARCH + "?messageId=MSG_I_008"));
@@ -92,14 +100,17 @@ class HfpElV700AdminEquipmentEditControllerWebMvcTest {
     @Test
     void updateRedirectsToV600OnSuccess() throws Exception {
         doNothing().when(updateApplicationService).update("ADMIN1", 1001L, "更新後の長机", "UNAVAILABLE", "保守点検中", 0);
+        MockHttpSession session = sessionWithToken(OneTimeTokenScopes.V700_UPDATE);
 
         mockMvc.perform(post(RoutePaths.HFP_ELV700_ADMIN_EQUIPMENT_EDIT_UPDATE)
+                        .session(session)
                         .with(csrf())
                         .with(userPrincipal("ADMIN1", UserRole.ADMIN))
                         .param("equipmentId", "1001")
                         .param("equipmentName", "更新後の長机")
                         .param("statusCode", "UNAVAILABLE")
                         .param("remarks", "保守点検中")
+                        .param("oneTimeToken", token(session, OneTimeTokenScopes.V700_UPDATE))
                         .param("version", "0"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl(RoutePaths.HFP_ELV600_ADMIN_EQUIPMENT_SEARCH + "?messageId=MSG_I_009"));
@@ -108,14 +119,17 @@ class HfpElV700AdminEquipmentEditControllerWebMvcTest {
     @Test
     void registerReturnsInputErrorWhenEquipmentNameTooLong() throws Exception {
         given(initApplicationService.initialize("create", null)).willReturn(createResponse());
+        MockHttpSession session = sessionWithToken(OneTimeTokenScopes.V700_REGISTER);
 
         mockMvc.perform(post(RoutePaths.HFP_ELV700_ADMIN_EQUIPMENT_EDIT_REGISTER)
+                        .session(session)
                         .with(csrf())
                         .with(userPrincipal("ADMIN1", UserRole.ADMIN))
                         .param("equipmentName", "a".repeat(101))
                         .param("equipmentType", "DESK")
                         .param("storageLocation", "第3倉庫")
                         .param("statusCode", "AVAILABLE")
+                        .param("oneTimeToken", token(session, OneTimeTokenScopes.V700_REGISTER))
                         .param("remarks", "新規備品"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("備品名は100文字以内で入力してください。")));
@@ -124,13 +138,16 @@ class HfpElV700AdminEquipmentEditControllerWebMvcTest {
     @Test
     void registerReturnsInputErrorWhenEquipmentNameIsMissing() throws Exception {
         given(initApplicationService.initialize("create", null)).willReturn(createResponse());
+        MockHttpSession session = sessionWithToken(OneTimeTokenScopes.V700_REGISTER);
 
         mockMvc.perform(post(RoutePaths.HFP_ELV700_ADMIN_EQUIPMENT_EDIT_REGISTER)
+                        .session(session)
                         .with(csrf())
                         .with(userPrincipal("ADMIN1", UserRole.ADMIN))
                         .param("equipmentType", "DESK")
                         .param("storageLocation", "第3倉庫")
                         .param("statusCode", "AVAILABLE")
+                        .param("oneTimeToken", token(session, OneTimeTokenScopes.V700_REGISTER))
                         .param("remarks", "新規備品"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("備品名を入力してください。")));
@@ -139,14 +156,17 @@ class HfpElV700AdminEquipmentEditControllerWebMvcTest {
     @Test
     void updateReturnsInputErrorWhenEquipmentNameTooLong() throws Exception {
         given(initApplicationService.initialize("edit", 1001L)).willReturn(editResponse());
+        MockHttpSession session = sessionWithToken(OneTimeTokenScopes.V700_UPDATE);
 
         mockMvc.perform(post(RoutePaths.HFP_ELV700_ADMIN_EQUIPMENT_EDIT_UPDATE)
+                        .session(session)
                         .with(csrf())
                         .with(userPrincipal("ADMIN1", UserRole.ADMIN))
                         .param("equipmentId", "1001")
                         .param("equipmentName", "a".repeat(101))
                         .param("statusCode", "UNAVAILABLE")
                         .param("remarks", "保守点検中")
+                        .param("oneTimeToken", token(session, OneTimeTokenScopes.V700_UPDATE))
                         .param("version", "0"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("備品名は100文字以内で入力してください。")));
@@ -155,16 +175,29 @@ class HfpElV700AdminEquipmentEditControllerWebMvcTest {
     @Test
     void updateReturnsInputErrorWhenEquipmentNameIsMissing() throws Exception {
         given(initApplicationService.initialize("edit", 1001L)).willReturn(editResponse());
+        MockHttpSession session = sessionWithToken(OneTimeTokenScopes.V700_UPDATE);
 
         mockMvc.perform(post(RoutePaths.HFP_ELV700_ADMIN_EQUIPMENT_EDIT_UPDATE)
+                        .session(session)
                         .with(csrf())
                         .with(userPrincipal("ADMIN1", UserRole.ADMIN))
                         .param("equipmentId", "1001")
                         .param("statusCode", "UNAVAILABLE")
                         .param("remarks", "保守点検中")
+                        .param("oneTimeToken", token(session, OneTimeTokenScopes.V700_UPDATE))
                         .param("version", "0"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("備品名を入力してください。")));
+    }
+
+    private MockHttpSession sessionWithToken(String scope) {
+        MockHttpSession session = new MockHttpSession();
+        OneTimeTokenSupport.issueToken(session, scope);
+        return session;
+    }
+
+    private String token(MockHttpSession session, String scope) {
+        return OneTimeTokenSupport.issueToken(session, scope);
     }
 
     private FindAdminEquipmentEditQueryService.Response createResponse() {

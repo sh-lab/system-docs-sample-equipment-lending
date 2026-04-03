@@ -86,8 +86,9 @@
     <section class="business-section" th:if="${hasSelection}">
         <h2 class="business-section__title" th:text="#{screen.elv500.review-comment}">screen.elv500.review-comment</h2>
         <div th:if="${isApprovalReviewMode}">
-            <form method="post">
+            <form method="post" data-prevent-double-submit="true">
                 <input th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" type="hidden">
+                <input name="oneTimeToken" th:value="${reviewToken}" type="hidden">
                 <input name="requestId" th:value="${viewData.selectedRequest().lendingRequestId()}" type="hidden">
                 <input name="version" th:value="${viewData.selectedRequest().version()}" type="hidden">
                 <textarea class="business-textarea" name="reviewComment" rows="5" th:text="${reviewComment}"></textarea>
@@ -108,8 +109,9 @@
 
     <section class="business-section" th:if="${hasSelection}">
         <h2 class="business-section__title" th:text="#{screen.elv500.return-confirm-comment}">screen.elv500.return-confirm-comment</h2>
-        <form method="post" th:if="${isReturnConfirmMode}" th:action="@{/hfp-elv500-admin-lending-review/return-confirm}">
+        <form method="post" th:if="${isReturnConfirmMode}" th:action="@{/hfp-elv500-admin-lending-review/return-confirm}" data-prevent-double-submit="true">
             <input th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" type="hidden">
+            <input name="oneTimeToken" th:value="${returnConfirmToken}" type="hidden">
             <input name="requestId" th:value="${viewData.selectedRequest().lendingRequestId()}" type="hidden">
             <input name="version" th:value="${viewData.selectedRequest().version()}" type="hidden">
             <textarea class="business-textarea" name="returnConfirmComment" rows="5" th:text="${returnConfirmComment}"></textarea>

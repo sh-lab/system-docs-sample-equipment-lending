@@ -1,4 +1,4 @@
-package net.shlab.hogefugapiyo.equipmentlending.presentation;
+package net.shlab.hogefugapiyo.equipmentlending.presentation.controller;
 
 import java.util.LinkedHashMap;
 import java.util.List;

@@ -50,7 +50,7 @@
 ### 6.1 画面 DTO
 | 項目名 | 型 | 必須 | 説明 |
 |--------|----|------|------|
-| selectedRequest | `FindAdminLendingReviewQueryServiceImpl.Detail` | ○ | 選択中申請詳細 |
+| selectedRequest | `FindAdminLendingReviewQueryService.Detail` | ○ | 選択中申請詳細 |
 | mode | string | ○ | `APPROVAL_REVIEW` または `RETURN_CONFIRM` |
 
 ### 6.2 申請詳細 DTO
@@ -68,7 +68,7 @@
 | reviewedAt | datetime | 任意 | 承認または却下日時 |
 | returnRequestedAt | datetime | 任意 | 返却申請日時 |
 | version | long | ○ | 楽観ロック用バージョン |
-| equipmentItems | `List<EquipmentSummaryDto>` | ○ | 対象備品一覧 |
+| equipmentItems | `List<FindAdminLendingReviewQueryService.EquipmentItem>` | ○ | 対象備品一覧 |
 
 ---
 

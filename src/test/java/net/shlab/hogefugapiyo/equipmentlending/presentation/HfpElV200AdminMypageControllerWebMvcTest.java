@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.List;
 import net.shlab.hogefugapiyo.equipmentlending.application.HfpElSas201AdminMypageInitApplicationService;
+import net.shlab.hogefugapiyo.equipmentlending.presentation.controller.HfpElV200AdminMypageController;
 import net.shlab.hogefugapiyo.equipmentlending.presentation.route.RoutePaths;
 import net.shlab.hogefugapiyo.equipmentlending.model.value.UserRole;
 import net.shlab.hogefugapiyo.framework.i18n.I18nMessageResolver;

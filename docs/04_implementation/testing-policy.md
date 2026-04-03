@@ -68,7 +68,7 @@
 ### 5.2 Web スライステスト
 
 - 対象は Spring MVC Controller とする。
-- 目的は、ルーティング、バリデーション、PRG、View 名、および Controller が薄い責務に留まっていることの確認である。
+- 目的は、ルーティング、バリデーション、PRG、重複送信防止、View 名、および Controller が薄い責務に留まっていることの確認である。
 - Controller の業務ロジックは直接検証せず、Application Service をモック化して Controller 責務に集中する。
 - 基本技術要素は `@WebMvcTest`、MockMvc、`@MockitoBean` とする。
 - 主な確認観点は以下とする。
@@ -78,6 +78,7 @@
   - メッセージ種別（info / warning など）が正しく分岐すること。
   - 管理対象メッセージを表示する場合、`[メッセージID]メッセージ本文` 形式になっていること。
   - Spring Security を利用する更新系リクエストでは、CSRF トークン付与を前提に確認すること。
+- 重複送信防止対象フォームでは、`HandlerInterceptor` によるワンタイムトークン正常系と、欠落または再利用時の専用エラー画面へのリダイレクト異常系を確認すること。
 
 ### 5.3 Repository テスト
 

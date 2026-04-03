@@ -24,7 +24,7 @@
 
 ### 4.2 事後条件
 - 正常終了時：
-  - 利用者マイページ表示に必要な `FindUserMypageQueryServiceImpl.Response` を返却する。
+  - 利用者マイページ表示に必要な `FindUserMypageQueryService.Response` を返却する。
 - 異常終了時：
   - トランザクションを必要とする更新は存在しない。
   - UI へエラーが通知される。
@@ -53,8 +53,8 @@
 ### 7.2 出力DTO
 | 項目 | 型 | 必須 | 説明 |
 |-----|----|-----|-----|
-| lentRequests | `List<FindUserMypageQueryServiceImpl.RequestItem>` | ○ | 貸出中申請一覧 |
-| pendingRequests | `List<FindUserMypageQueryServiceImpl.RequestItem>` | ○ | 承認待ち、返却確認待ち、却下申請一覧 |
+| lentRequests | `List<FindUserMypageQueryService.RequestItem>` | ○ | 貸出中申請一覧 |
+| pendingRequests | `List<FindUserMypageQueryService.RequestItem>` | ○ | 承認待ち、返却確認待ち、却下申請一覧 |
 | hasRejectedRequest | boolean | ○ | 却下済み未確認申請の有無 |
 
 ## 8. 例外マッピング方針
@@ -72,7 +72,7 @@
 - 関連機能要件：`FR-004`、`FR-006`、`FR-007`
 - 実装上のインターフェース名：`HfpElSas101UserMypageInitApplicationService`
 - 実装上の主な入出力：
-  - 入力オブジェクト：`FindUserMypageQueryServiceImpl.Request`
-  - 出力オブジェクト：`FindUserMypageQueryServiceImpl.Response`
+  - 入力オブジェクト：`FindUserMypageQueryService.Request`
+  - 出力オブジェクト：`FindUserMypageQueryService.Response`
 
 ---
